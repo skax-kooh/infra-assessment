@@ -1,12 +1,43 @@
 <h2>웹서버 진단</h2>
 <div class="assessment-content">
     <div class="card">
-        <h3>진단 대상 IP 입력</h3>
-        <p>진단할 웹서버의 IP 주소를 입력하세요 (한 줄에 하나씩).</p>
-        <textarea id="server-ips" rows="5" placeholder="예: 192.168.1.10&#10;10.0.0.5"
-            style="width: 100%; padding: 10px; margin-bottom: 10px;"></textarea>
-        <button id="start-scan-btn" class="btn-primary">진단 시작</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3>진단 대상 서버</h3>
+            <button id="add-server-btn" class="btn-secondary">+ 서버 추가</button>
+        </div>
+
+        <div id="server-list">
+            <!-- Server tiles will be added here by JS -->
+        </div>
+
+        <button id="start-scan-btn" class="btn-primary" style="margin-top: 20px; width: 100%;">진단 시작</button>
     </div>
+
+    <!-- Template for Server Tile -->
+    <template id="server-tile-template">
+        <div class="server-tile card"
+            style="margin-bottom: 15px; padding: 15px; background: #f9f9f9; border: 1px solid #eee;">
+            <div style="display: flex; justify-content: flex-end;">
+                <button type="button" class="remove-server-btn"
+                    style="background: none; border: none; color: #ff4444; cursor: pointer;">✕ 삭제</button>
+            </div>
+            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px;">
+                <div class="form-group">
+                    <label>Server IP</label>
+                    <input type="text" class="server-ip" placeholder="Server IP" style="width: 100%; padding: 8px;">
+                </div>
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" class="server-user" placeholder="root" style="width: 100%; padding: 8px;">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" class="server-pass" placeholder="Password"
+                        style="width: 100%; padding: 8px;">
+                </div>
+            </div>
+        </div>
+    </template>
 
     <div id="scan-results" style="margin-top: 20px; display: none;">
         <h3>진단 결과</h3>
@@ -51,5 +82,31 @@
 
     th {
         background-color: #f2f2f2;
+    }
+
+    .btn-secondary {
+        background-color: #008CBA;
+        color: white;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+        background-color: #007bb5;
+    }
+
+    /* ... other existing styles ... */
+
+    .form-group {
+        margin-bottom: 5px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        font-size: 0.9em;
     }
 </style>
