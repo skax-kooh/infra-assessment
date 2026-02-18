@@ -1,0 +1,79 @@
+상세 설계 및 개발 환경 구축
+시스템 아키텍처 설계 및 개발 환경 세팅
+
+### Agent 페르소나 및 시스템 프롬프트 (Identity)
+
+Agent의 정체성, 역할, 그리고 답변의 톤앤매너를 정의합니다. 실제 LLM의 System Prompt에 들어갈 핵심 내용입니다.
+
+|              |                            |
+| ------------ | -------------------------- |
+| **항목**       | **정의 내용**                  |
+| **Agent 이름** | Cloud Infra Auditor (가칭)         |
+| **주요 역할**    | 웹서버 설정 파일(Apache, Nginx 등)을 전문적으로 분석하고 보안 취약점 및 성능 이슈를 진단하는 감사자    |
+| **핵심 목표**    | 수집된 설정 파일 내용을 바탕으로 보안 위험 요소를 식별하고, 구체적인 수정 가이드라인을 제공하여 인프라 안전성 확보     |
+| **톤앤매너**     | 전문적이고 분석적이며, 명확한 근거(파일명, 라인 번호)를 제시하는 객관적인 태도        |
+| **제약 사항**    | 실제 운영 중인 서버에 직접적인 변경을 가하지 않음 (Read-Only), 사용자가 제공한 파일 내용에 대해서만 분석하고 추측 배제 |
+
+### 워크플로우 및 오케스트레이션 (Workflow & Logic)
+
+사용자 입력부터 최종 응답까지 Agent의 사고 과정과 행동 순서를 기술합니다.
+
+**2.1 처리 로직**
+
+* **Step 1 (Input Analysis):** 사용자가 제공한 여러 서버의 설정 파일 데이터(파일명, 내용)와 사용자 프롬프트(진단 관점)를 입력받아 분석 준비
+
+* **Step 2 (Data Processing):** 수집된 설정 파일들을 서버별, 파일별로 구조화하고 불필요한 공백이나 주석 등을 처리(필요 시)하여 Context Window 최적화
+
+* **Step 3 (AI Evaluation):** 구성된 Context를 LLM에 전송. System Prompt(보안 감사자 페르소나)와 User Prompt(구체적 요구사항)에 따라 설정 내용을 검토하고 취약점 식별
+
+* **Step 4 (Report Generation):** 식별된 이슈를 '취약점 내용', '관련 파일/라인', '수정 권고안' 형태로 정리하여 Markdown 형식의 리포트 생성 및 반환
+
+**2.2 상태 관리**
+
+* **Session State:** Flask의 `config_store` 모듈을 통한 인메모리 상태 관리 (전역 설정 및 프롬프트 저장)
+
+* **Request Flow:** Stateless한 HTTP 요청(REST API) 기반으로 동작하며, 각 진단 요청 시 필요한 모든 데이터를 포함하여 전송
+
+### 도구(Tools) 및 함수 명세 (Capability)
+
+Agent가 외부 세상과 상호작용하기 위해 사용할 도구(Function Calling)를 정의합니다.
+
+|                         |                         |                            |                     |
+| ----------------------- | ----------------------- | -------------------------- | ------------------- |
+| **도구명 (Function Name)** | **기능 설명 (Description)** | **입력 파라미터 (Input Schema)** | **출력 데이터 (Output)** |
+| `scan_web_server`      | SSH를 통해 대상 서버에 접속하여 Apache/Httpd 프로세스를 확인하고 설정 파일을 수집 | `ip`, `username`, `password` | `{status, results: [{path, content}]}` |
+| `analyze_configurations`| 수집된 설정 파일 내용을 LLM에 전송하여 보안/성능 진단을 수행 | `configs: [{path, content}]`, `system_prompt`, `user_prompt` | `{analysis: "Markdown Report"}` |
+| `update_prompts`       | AI 분석에 사용될 시스템 및 사용자 프롬프트를 업데이트 | `system_prompt`, `user_prompt` | `{status, message}`      |
+
+### 지식 베이스 및 메모리 전략 (Context & Memory)
+
+LLM이 기억해야 할 단기 대화 내역과 참조해야 할 장기 데이터(RAG) 전략을 수립합니다.
+
+**4.1 RAG (검색 증강 생성) 전략**
+
+* **참조 데이터 소스:** (현재 단계 미적용) 추후 ISMS-P 인증 기준, Apache 보안 가이드, CVE 데이터베이스 등을 Vector DB화 가능
+
+* **청킹(Chunking) 방식:** 파일 단위 또는 설정 블록(`<VirtualHost>`, `<Directory>` 등) 단위 분할
+
+* **임베딩 모델:** text-embedding-ada-002 (Azure OpenAI)
+
+* **Vector DB:** ChromaDB 또는 FAISS (로컬), Azure AI Search (클라우드)
+
+**4.2 대화 메모리 (Conversation History)**
+
+* **메모리 유형:** 단발성 분석(Single-turn) 위주이므로 대화 히스토리 유지 필요성 낮음. 필요 시 Session 기반 대화형 인터페이스 확장 가능.
+
+* **저장 전략:** 현재는 별도 저장 없음. 브라우저 세션 내에서만 결과 유지.
+
+### 핵심 에이전트 기술 스택
+
+일반적인 웹 개발 스택이 아닌, LLM의 답변 품질과 구조를 제어하기 위한 기술적 의사결정을 기입합니다.
+|                     |                                           |                            |
+| ------------------- | ----------------------------------------- | -------------------------- |
+| **구분**              | **선정 전략/기술**                              | **선정 사유 (논리적 근거)**         |
+| **LLM Model**       | gpt-4o (Azure OpenAI)     | 복잡한 설정 파일의 문맥을 이해하고 정확한 보안 취약점을 식별하기 위한 고성능 모델 필요. 한국어 처리 능력 우수. |
+| **Agent Framework** | LangChain (Python)           | LLM과의 연동, 프롬프트 템플릿 관리, 향후 검색(RAG) 기능 확장성을 고려하여 표준적인 프레임워크 선정    |
+| **Prompt Strategy** | Role-Playing & Context Injection            | 보안 전문가라는 페르소나 부여(Role-Playing)와 실제 설정 파일 내용을 문맥에 주입(Context Injection)하여 구체적인 답변 유도   |
+| **Output Parsing**  | Markdown Text | 사용자가 읽기 편한 구조화된 리포트(헤더, 코드블록, 리스트)를 생성하기에 적합하며 웹 렌더링이 용이함       |
+| **Monitoring**      | Application Logging (Console)    | 현재 개발 단계에서 즉각적인 디버깅을 위해 콘솔 로그 활용. 추후 LangSmith 도입 고려       |
+
