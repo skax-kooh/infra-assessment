@@ -10,7 +10,34 @@
             <!-- Server tiles will be added here by JS -->
         </div>
 
-        <button id="start-scan-btn" class="btn-primary" style="margin-top: 20px; width: 100%;">진단 시작</button>
+        <div id="server-list">
+            <!-- Server tiles will be added here by JS -->
+        </div>
+
+        <details style="margin-top: 20px; border: 1px solid #ddd; border-radius: 4px; padding: 10px;">
+            <summary style="cursor: pointer; font-weight: bold; color: #555;">AI Prompt Settings (AI 프롬프트 설정)
+            </summary>
+            <div style="margin-top: 15px;">
+                <div class="form-group">
+                    <label>System Prompt (시스템 프롬프트)</label>
+                    <textarea id="ai-system-prompt" class="form-control"
+                        style="width: 100%; min-height: 100px; font-family: monospace; font-size: 13px;">{{ config.get('azure_openai_system_prompt', '') }}</textarea>
+                    <p style="font-size: 0.8em; color: #666;">AI의 역할과 분석 기준을 정의합니다.</p>
+                </div>
+                <div class="form-group">
+                    <label>User Prompt (사용자 프롬프트)</label>
+                    <textarea id="ai-user-prompt" class="form-control"
+                        style="width: 100%; min-height: 100px; font-family: monospace; font-size: 13px;">{{ config.get('azure_openai_user_prompt', '') }}</textarea>
+                    <p style="font-size: 0.8em; color: #666;">실제 분석 요청 메시지입니다. <code>{content}</code> 부분에 설정 파일 내용이
+                        삽입됩니다.</p>
+                </div>
+            </div>
+        </details>
+
+        <button id="start-check-btn" type="button" class="btn-primary" style="margin-top: 20px; width: 100%;">설정
+            조회</button>
+
+        <div id="scan-status" style="margin-top: 15px; padding: 10px; border-radius: 4px; display: none;"></div>
     </div>
 
     <!-- Template for Server Tile -->

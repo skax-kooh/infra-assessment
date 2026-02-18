@@ -25,6 +25,15 @@
                         </li>
                     </ul>
                 </li>
+                <li>
+                    <a href="#settingsSubmenu" data-toggle="collapse" aria-expanded="false"
+                        class="dropdown-toggle">설정</a>
+                    <ul class="collapse list-unstyled" id="settingsSubmenu">
+                        <li>
+                            <a href="#" class="nav-link" data-url="/settings/llm">LLM API 설정</a>
+                        </li>
+                    </ul>
+                </li>
             </ul>
         </nav>
 
@@ -35,7 +44,7 @@
         </div>
     </div>
 
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}?v={{ range(1, 10000) | random }}"></script>
 </body>
 
 </html>
