@@ -21,6 +21,7 @@ def index():
 
 # 이 파일이 직접 실행될 때만 웹 서버를 켭니다.
 if __name__ == '__main__':
+    # host='0.0.0.0': 외부 접속 허용 (EC2 등에서 필수)
     # debug=True: 코드 수정 시 자동 재시작
     # port=5000: 5000번 포트에서 실행
-    app.run(debug=True, port=5000)
+    app.run(host='0.0.0.0', debug=True, port=5000)
