@@ -65,25 +65,16 @@ body {
 }
 
 /* Main Content Styles */
+/* Main Content Styles */
 #content {
     width: calc(100% - var(--sidebar-width));
     padding: 40px;
     min-height: 100vh;
     transition: all 0.3s;
-    position: absolute;
-    top: 0;
-    right: 0;
+    margin-left: var(--sidebar-width);
 }
 
-#sidebarCollapse {
-    background: var(--primary-bg);
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    cursor: pointer;
-    border-radius: 5px;
-    margin-bottom: 20px;
-}
+
 
 h2 {
     border-bottom: 2px solid #ddd;
