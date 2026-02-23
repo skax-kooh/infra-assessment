@@ -1,0 +1,45 @@
+name: Deploy to EC2 via CodeDeploy
+
+on:
+  push:
+    branches:
+      - main  # main 브랜치에 push 시 자동 배포
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: Deploy via CodeDeploy (GitHub source)
+        run: |
+          aws deploy create-deployment \
+            --application-name mwlab-assessment-app \
+            --deployment-group-name mwlab-assessment-deploy-group \
+            --github-location repository=${{ github.repository }},commitId=${{ github.sha }} \
+            --deployment-config-name CodeDeployDefault.OneAtATime \
+            --description "Deploy commit ${{ github.sha }} by ${{ github.actor }}"
+
+      - name: Wait for deployment to complete
+        run: |
+          DEPLOYMENT_ID=$(aws deploy list-deployments \
+            --application-name mwlab-assessment-app \
+            --deployment-group-name mwlab-assessment-deploy-group \
+            --query 'deployments[0]' \
+            --output text)
+
+          echo "Deployment ID: $DEPLOYMENT_ID"
+
+          aws deploy wait deployment-successful \
+            --deployment-id $DEPLOYMENT_ID
+
+          echo "Deployment completed successfully!"
