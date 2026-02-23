@@ -1,0 +1,28 @@
+version: 0.0
+os: linux
+files:
+  - source: /
+    destination: /home/ec2-user/infra-assessment
+    overwrite: true
+permissions:
+  - object: /home/ec2-user/infra-assessment
+    owner: ec2-user
+    group: ec2-user
+    mode: "755"
+hooks:
+  BeforeInstall:
+    - location: scripts/stop_application.sh
+      timeout: 60
+      runas: root
+  AfterInstall:
+    - location: scripts/install_dependencies.sh
+      timeout: 180
+      runas: ec2-user
+  ApplicationStart:
+    - location: scripts/start_application.sh
+      timeout: 60
+      runas: ec2-user
+  ValidateService:
+    - location: scripts/validate_service.sh
+      timeout: 30
+      runas: ec2-user
