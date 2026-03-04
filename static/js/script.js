@@ -632,8 +632,23 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (data.error) {
                         outputElement.innerHTML = '<p style="color: red;">오류: ' + data.error + '</p>';
                     } else {
-                        // [수정] 마크다운 렌더링 적용
-                        outputElement.innerHTML = marked.parse(data.analysis);
+                        // [수정] 토큰 사용량 표시
+                        if (data.usage) {
+                            const total = data.usage.total_tokens || 0;
+                            const prompt = data.usage.input_tokens || 0;
+                            const completion = data.usage.output_tokens || 0;
+
+                            const tokenBadge = `
+                                <div style="float: right; font-size: 11px; background: #e9ecef; padding: 4px 8px; border-radius: 12px; color: #495057; font-weight: 500; margin-bottom: 10px;">
+                                    Tokens: <strong>${total.toLocaleString()}</strong> 
+                                    (Input: ${prompt.toLocaleString()}, Output: ${completion.toLocaleString()})
+                                </div>
+                                <div style="clear: both;"></div>
+                            `;
+                            outputElement.innerHTML = tokenBadge + marked.parse(data.analysis);
+                        } else {
+                            outputElement.innerHTML = marked.parse(data.analysis);
+                        }
                         outputElement.style.color = '#333';
                     }
                 })

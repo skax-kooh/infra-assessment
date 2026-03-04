@@ -284,7 +284,14 @@ def analyze_config():
 
         # 5. 결과 받아서 반환
         ai_msg = llm.invoke(messages)
-        return jsonify({'analysis': ai_msg.content})
+        
+        # 토큰 사용량 정보 추출
+        usage = getattr(ai_msg, 'usage_metadata', {})
+        
+        return jsonify({
+            'analysis': ai_msg.content,
+            'usage': usage
+        })
 
     except Exception as e:
         logger.error(f"AI 분석 중 오류 발생: {str(e)}")
