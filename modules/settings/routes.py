@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, jsonify
 from langchain_openai import AzureChatOpenAI
 from langchain_core.messages import HumanMessage
-from modules.config_store import config, save_config
+from modules.config_store import config, save_config, refresh_config
 
 # 설정 관련 라우트 그룹 정의
 settings_bp = Blueprint('settings', __name__)
@@ -11,8 +11,9 @@ def llm_settings_page():
     """
     LLM(언어모델) API 설정 페이지를 보여줍니다.
     """
-    # config를 템플릿에 전달하여 현재 설정값을 미리 채워줍니다.
-    return render_template('settings/llm.html', config=config)
+    # 최신 설정을 파일에서 다시 읽어옵니다.
+    current_config = refresh_config()
+    return render_template('settings/llm.html', config=current_config)
 
 @settings_bp.route('/llm/update', methods=['POST'])
 def update_llm_settings():
@@ -20,12 +21,14 @@ def update_llm_settings():
     사용자가 입력한 설정값을 저장합니다.
     """
     try:
+        # 다른 워커가 저장했을 수 있으므로 먼저 최신화
+        refresh_config()
+        
         data = request.json
         if not data:
              return jsonify({'status': 'error', 'message': '전송된 데이터가 없습니다.'}), 400
 
         # 사용자가 입력한 값으로 전역 설정(config) 업데이트
-        # 값이 없으면 기존 값 유지
         new_endpoint = data.get('endpoint')
         new_key = data.get('api_key')
 
@@ -39,7 +42,8 @@ def update_llm_settings():
             changed = True
             
         if changed:
-            save_config(config)
+            if not save_config(config):
+                return jsonify({'status': 'error', 'message': '설정 파일 저장에 실패했습니다. 권한을 확인하세요.'}), 500
             
         return jsonify({'status': 'success', 'message': '설정이 성공적으로 저장되었습니다.'})
         

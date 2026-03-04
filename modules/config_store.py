@@ -51,3 +51,10 @@ def save_config(current_config):
 
 # 전역 설정 저장소 초기 로드
 config = load_config()
+
+def refresh_config():
+    """파일에서 설정을 다시 로드하여 전역 config를 업데이트합니다."""
+    global config
+    new_config = load_config()
+    config.update(new_config)
+    return config
