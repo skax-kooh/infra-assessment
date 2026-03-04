@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, jsonify
 from langchain_openai import AzureChatOpenAI
 from langchain_core.messages import HumanMessage
-from modules.config_store import config
+from modules.config_store import config, save_config
 
 # 설정 관련 라우트 그룹 정의
 settings_bp = Blueprint('settings', __name__)
@@ -29,11 +29,17 @@ def update_llm_settings():
         new_endpoint = data.get('endpoint')
         new_key = data.get('api_key')
 
-        if new_endpoint:
+        changed = False
+        if new_endpoint and config['azure_openai_endpoint'] != new_endpoint:
             config['azure_openai_endpoint'] = new_endpoint
+            changed = True
         
-        if new_key:
+        if new_key and config['azure_openai_api_key'] != new_key:
             config['azure_openai_api_key'] = new_key
+            changed = True
+            
+        if changed:
+            save_config(config)
             
         return jsonify({'status': 'success', 'message': '설정이 성공적으로 저장되었습니다.'})
         
