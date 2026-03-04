@@ -2,10 +2,14 @@ from flask import Blueprint, render_template, request, jsonify
 import paramiko
 import re
 import os
+import logging
+import traceback
 from langchain_openai import AzureChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
 # 설정 저장소에서 설정을 가져옵니다.
 from modules.config_store import config
+
+logger = logging.getLogger(__name__)
 
 # 블루프린트 정의 (라우트 그룹화)
 infrastructure_bp = Blueprint('infrastructure', __name__)
@@ -176,7 +180,9 @@ def scan_web_servers():
                 result['config_count'] = len(collected_configs)
 
         except Exception as e:
-            # 에러 발생 시
+            # 에러 발생 시 로그 기록
+            logger.error(f"SSH 스캔 중 오류 발생 ({ip}): {str(e)}")
+            logger.error(traceback.format_exc())
             result['status'] = 'error'
             result['message'] = str(e)
         finally:
@@ -281,4 +287,6 @@ def analyze_config():
         return jsonify({'analysis': ai_msg.content})
 
     except Exception as e:
+        logger.error(f"AI 분석 중 오류 발생: {str(e)}")
+        logger.error(traceback.format_exc())
         return jsonify({'error': str(e)}), 500

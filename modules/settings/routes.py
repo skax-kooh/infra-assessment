@@ -2,6 +2,10 @@ from flask import Blueprint, render_template, request, jsonify
 from langchain_openai import AzureChatOpenAI
 from langchain_core.messages import HumanMessage
 from modules.config_store import config, save_config, refresh_config
+import logging
+import traceback
+
+logger = logging.getLogger(__name__)
 
 # 설정 관련 라우트 그룹 정의
 settings_bp = Blueprint('settings', __name__)
@@ -48,6 +52,8 @@ def update_llm_settings():
         return jsonify({'status': 'success', 'message': '설정이 성공적으로 저장되었습니다.'})
         
     except Exception as e:
+        logger.error(f"설정 업데이트 중 오류 발생: {str(e)}")
+        logger.error(traceback.format_exc())
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 @settings_bp.route('/llm/test', methods=['POST'])
@@ -84,4 +90,6 @@ def test_llm_connection():
         return jsonify({'status': 'success', 'message': f'연결 성공: {response.content[:50]}...'})
 
     except Exception as e:
+        logger.error(f"LLM 연결 테스트 중 오류 발생: {str(e)}")
+        logger.error(traceback.format_exc())
         return jsonify({'status': 'error', 'message': f'연결 실패: {str(e)}'}), 500

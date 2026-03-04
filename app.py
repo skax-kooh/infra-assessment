@@ -1,4 +1,23 @@
+import logging
+import os
 from flask import Flask, render_template
+
+# 로그 디렉토리 생성
+if not os.path.exists('logs'):
+    os.makedirs('logs')
+
+# 로깅 설정
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
+    handlers=[
+        logging.FileHandler("logs/app.log", encoding='utf-8'),
+        logging.StreamHandler()
+    ]
+)
+
+logger = logging.getLogger(__name__)
+logger.info("Application starting...")
 
 # 우리가 만든 모듈(기능)들을 가져옵니다.
 from modules.infrastructure.routes import infrastructure_bp
