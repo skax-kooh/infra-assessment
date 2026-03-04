@@ -384,19 +384,19 @@ document.addEventListener('DOMContentLoaded', function () {
         // --------------------------------------------------------------------
         html += `
             <div style="margin-bottom: 30px; padding: 20px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px;">
-                <h3 style="margin-top: 0; color: #333;">전체 서버 통합 AI 진단</h3>
+                <h3 style="margin-top: 0; color: #333;">AI 진단</h3>
                 <p style="color: #666; margin-bottom: 15px;">조회된 모든 서버의 설정 파일들을 AI가 종합적으로 분석합니다.</p>
                 
                 <button class="btn-primary" 
                     id="analyze-all-servers-btn"
                     onclick="analyzeAllServers()" 
                     style="width: 100%; padding: 15px; background: #28a745; font-weight: bold; font-size: 1.1em;">
-                    모든 서버 통합 진단 실행
+                    진단 실행
                 </button>
                 
                 <!-- 전체 분석 결과 표시 영역 -->
                 <div id="global-all-servers-analysis" style="display: none; margin-top: 20px; background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #d0bfff;">
-                    <h4 style="color: #28a745; margin-top: 0;">전체 통합 진단 결과</h4>
+                    <h4 style="color: #28a745; margin-top: 0;">진단 결과</h4>
                     <pre class="analysis-content" style="white-space: pre-wrap; font-family: sans-serif; font-size: 14px; line-height: 1.6; color: #333;"></pre>
                 </div>
             </div>
@@ -630,17 +630,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 .then(response => response.json())
                 .then(data => {
                     if (data.error) {
-                        outputElement.textContent = '오류: ' + data.error;
-                        outputElement.style.color = 'red';
+                        outputElement.innerHTML = '<p style="color: red;">오류: ' + data.error + '</p>';
                     } else {
-                        outputElement.textContent = data.analysis;
+                        // [수정] 마크다운 렌더링 적용
+                        outputElement.innerHTML = marked.parse(data.analysis);
                         outputElement.style.color = '#333';
                     }
                 })
                 .catch((error) => {
                     console.error('분석 오류:', error);
-                    outputElement.textContent = '분석 중 오류가 발생했습니다.';
-                    outputElement.style.color = 'red';
+                    outputElement.innerHTML = '<p style="color: red;">분석 중 오류가 발생했습니다.</p>';
                 });
         }
     }
