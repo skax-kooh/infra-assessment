@@ -355,15 +355,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ------------------------------------------------------------------------
-    // 진단 결과 표시 함수
-    // 서버에서 받은 JSON 데이터를 HTML로 예쁘게 그려줍니다.
-    // ------------------------------------------------------------------------
-    // ------------------------------------------------------------------------
-    // 진단 결과 표시 함수
-    // 서버에서 받은 JSON 데이터를 HTML로 예쁘게 그려줍니다.
-    // ------------------------------------------------------------------------
-    // ------------------------------------------------------------------------
-    // 진단 결과 표시 함수
+    // 진단 결과 표시
     // 서버에서 받은 JSON 데이터를 HTML로 예쁘게 그려줍니다.
     // ------------------------------------------------------------------------
     function displayScanResults(results) {
@@ -379,8 +371,7 @@ document.addEventListener('DOMContentLoaded', function () {
         let html = '';
 
         // --------------------------------------------------------------------
-        // [신규 기능] 전체 서버 통합 AI 진단 버튼
-        // 여러 서버의 설정을 한꺼번에 모아서 분석합니다.
+        // 전체 서버 통합 AI 진단 버튼
         // --------------------------------------------------------------------
         html += `
             <div style="margin-bottom: 30px; padding: 20px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px;">
@@ -479,7 +470,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     </details>
                 `;
 
-                // 개별 서버 진단 버튼 (선택사항으로 남겨둠, 필요 없다면 제거 가능하지만 유지하는 게 좋음)
+                // 개별 서버 진단 버튼
                 if (item.configs && item.configs.length > 0) {
                     html += `
                         <div style="margin-top: 20px; border-top: 1px dashed #ccc; padding-top: 20px;">
@@ -569,7 +560,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // --------------------------------------------------------------------
-        // [신규] 모든 서버 통합 AI 진단 함수
+        // 모든 서버 통합 AI 진단
         // --------------------------------------------------------------------
         if (!window.analyzeAllServers) {
             window.analyzeAllServers = function () {
@@ -612,7 +603,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // 로딩 상태 표시
             resultDiv.style.display = 'block';
-            outputElement.textContent = 'AI가 설정 파일들을 분석 중입니다... (파일이 많으면 시간이 걸릴 수 있습니다)';
+            outputElement.textContent = '분석 중...';
             outputElement.style.color = '#333';
 
             // 백엔드로 요청

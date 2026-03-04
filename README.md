@@ -1,2 +1,2 @@
 # infra-assessment
-AI Master Project 2기
+AI Master Project 3기
