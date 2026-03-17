@@ -678,8 +678,14 @@ document.addEventListener('DOMContentLoaded', function () {
                                         const originalText = decodeURIComponent(pane.querySelector('.config-raw-content').innerHTML);
                                         const newText = modConfig.modified_content;
 
+                                        // 백엔드에서 AI로 보낼 때 주석과 빈 줄을 제거했으므로, 
+                                        // 정확한 Diff 비교를 위해 원본 텍스트에서도 동일하게 제거해줍니다.
+                                        const cleanOriginalText = originalText.split('\n')
+                                            .filter(line => line.trim() !== '' && !line.trim().startsWith('#'))
+                                            .join('\n');
+
                                         // 1. jsdiff를 이용해 라인별 차이(Diff) 생성
-                                        const diff = Diff.diffLines(originalText, newText);
+                                        const diff = Diff.diffLines(cleanOriginalText, newText);
                                         
                                         // 2. 간단한 HTML 생성 (삭제는 빨간색, 추가는 초록색)
                                         let diffHtml = '<pre style="white-space: pre-wrap; word-wrap: break-word; font-family: monospace; font-size: 13px; line-height: 1.5; padding: 15px; margin: 0; background: #2b2b2b; color: #f8f8f2;">';
