@@ -214,6 +214,8 @@ def analyze_config():
     if not configs:
         return jsonify({'error': '분석할 설정 파일 내용이 없습니다.'}), 400
 
+    logger.info(f"AI 분석 요청 수신 - 대상 파일 수: {len(configs)}")
+
     try:
         # 1. AI에게 보낼 내용을 하나로 합칩니다. (토큰 절약을 위해 주석 제거)
         combined_content = ""
@@ -293,8 +295,12 @@ def analyze_config():
             HumanMessage(content=user_prompt)
         ]
 
+        logger.info(f"Azure OpenAI에 분석 요청을 전송합니다 (모델: {config['azure_openai_deployment']})...")
+
         # 5. 결과 받아서 반환
         ai_msg = llm.invoke(messages)
+        
+        logger.info("Azure OpenAI 분석 응답 수신 완료")
         
         # 토큰 사용량 정보 추출
         usage = getattr(ai_msg, 'usage_metadata', {})
