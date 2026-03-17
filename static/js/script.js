@@ -678,15 +678,44 @@ document.addEventListener('DOMContentLoaded', function () {
                                         const originalText = decodeURIComponent(pane.querySelector('.config-raw-content').innerHTML);
                                         const newText = modConfig.modified_content;
 
-                                        // 1. jsdiff를 이용해 패치(Diff) 생성
-                                        const diffPatch = Diff.createPatch(panePath, originalText, newText, '원본', 'AI 개선안');
+                                        // 1. jsdiff를 이용해 라인별 차이(Diff) 생성
+                                        const diff = Diff.diffLines(originalText, newText);
                                         
-                                        // 2. diff2html을 이용해 UI 생성
-                                        const diffHtml = Diff2Html.html(diffPatch, {
-                                            drawFileList: false,
-                                            matching: 'lines',
-                                            outputFormat: 'side-by-side' // 또는 'line-by-line'
+                                        // 2. 간단한 HTML 생성 (삭제는 빨간색, 추가는 초록색)
+                                        let diffHtml = '<pre style="white-space: pre-wrap; word-wrap: break-word; font-family: monospace; font-size: 13px; line-height: 1.5; padding: 15px; margin: 0; background: #2b2b2b; color: #f8f8f2;">';
+                                        
+                                        diff.forEach(part => {
+                                            // 삭제된 라인은 붉은색 바탕 (- 표시)
+                                            // 추가된 라인은 녹색 바탕 (+ 표시)
+                                            // 일반 라인은 투명
+                                            let bgColor = part.added ? '#1e3a1e' : part.removed ? '#3a1e1e' : 'transparent';
+                                            let textColor = part.added ? '#4CAF50' : part.removed ? '#ff4444' : '#f8f8f2';
+                                            let prefix = part.added ? '+ ' : part.removed ? '- ' : '  ';
+                                            
+                                            // HTML 이스케이프 함수
+                                            const escapeHtml = (unsafe) => {
+                                                if(!unsafe) return '';
+                                                return unsafe
+                                                     .replace(/&/g, "&amp;")
+                                                     .replace(/</g, "&lt;")
+                                                     .replace(/>/g, "&gt;")
+                                                     .replace(/"/g, "&quot;")
+                                                     .replace(/'/g, "&#039;");
+                                            };
+                                            
+                                            // 라인별로 처리하여 prefix를 붙여줌
+                                            let lines = part.value.split('\n');
+                                            // 마지막 빈 줄 제거 (split 특성상 끝에 빈 문자열이 생김)
+                                            if (lines[lines.length - 1] === '') {
+                                                lines.pop();
+                                            }
+                                            
+                                            lines.forEach(line => {
+                                                diffHtml += `<div style="background-color: ${bgColor}; color: ${textColor}; padding: 0 5px;">${prefix}${escapeHtml(line)}</div>`;
+                                            });
                                         });
+                                        
+                                        diffHtml += '</pre>';
 
                                         // 3. 기존 화면(original 뷰)을 감싸기
                                         const originalPre = pane.querySelector('.config-text');
@@ -696,9 +725,10 @@ document.addEventListener('DOMContentLoaded', function () {
                                             const diffContainer = document.createElement('div');
                                             diffContainer.className = 'diff-container';
                                             diffContainer.style.display = 'none';
-                                            diffContainer.style.background = '#fff';
-                                            diffContainer.style.border = '1px solid #d0bfff';
-                                            // 추가: 가로 스크롤 허용 및 최대 너비 제한 (UI 깨짐 방지)
+                                            diffContainer.style.background = '#2b2b2b';
+                                            diffContainer.style.border = '1px solid #444';
+                                            diffContainer.style.borderRadius = '6px';
+                                            diffContainer.style.marginTop = '10px';
                                             diffContainer.style.overflowX = 'auto';
                                             diffContainer.style.maxWidth = '100%';
                                             diffContainer.innerHTML = diffHtml;
