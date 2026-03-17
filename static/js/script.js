@@ -636,9 +636,9 @@ document.addEventListener('DOMContentLoaded', function () {
                                 </div>
                                 <div style="clear: both;"></div>
                             `;
-                            outputElement.innerHTML = tokenBadge + marked.parse(data.analysis);
+                            outputElement.innerHTML = tokenBadge + data.analysis;
                         } else {
-                            outputElement.innerHTML = marked.parse(data.analysis);
+                            outputElement.innerHTML = data.analysis;
                         }
                         outputElement.style.color = '#333';
                     }
