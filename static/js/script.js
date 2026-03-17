@@ -755,7 +755,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 })
                 .catch((error) => {
                     console.error('분석 오류:', error);
-                    outputElement.innerHTML = '<p style="color: red;">분석 중 오류가 발생했습니다.</p>';
+                    // 콘솔에 명확하게 에러 스택을 찍도록 추가
+                    console.trace(error);
+                    outputElement.innerHTML = `<p style="color: red;">분석 중 오류가 발생했습니다: ${error.message}</p>`;
                 });
         }
     }
