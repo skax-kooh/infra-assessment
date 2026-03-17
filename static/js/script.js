@@ -721,7 +721,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                     });
 
                                     // 생성된 HTML을 감싸는 컨테이너
-                                    const diffHtml = `<pre style="white-space: pre-wrap; word-wrap: break-word; font-family: monospace; font-size: 13px; line-height: 1.5; padding: 15px; margin: 0; background: #f8f8f8; color: #333;">${enhancedHtml}</pre>`;
+                                    const diffHtml = `<pre style="white-space: pre-wrap; word-wrap: break-word; font-family: monospace; font-size: 12px; line-height: 1.5; padding: 15px; margin: 0; background: #f8f8f8; color: #333;">${enhancedHtml}</pre>`;
 
                                     // 3. 기존 화면(original 뷰)을 감싸기
                                     const originalPre = pane.querySelector('.config-text');
@@ -745,7 +745,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                             btnGroup.style.marginBottom = '10px';
                                             btnGroup.innerHTML = `
                                                 <button type="button" class="btn-secondary toggle-orig-btn" style="background: #6c757d; font-size:12px;">📄 원본 보기</button>
-                                                <button type="button" class="btn-primary toggle-diff-btn" style="background: #6f42c1; font-size:12px; margin-left:5px;">✨ AI 개선안 보기 (Diff)</button>
+                                                <button type="button" class="btn-primary toggle-diff-btn" style="background: #6f42c1; font-size:12px; margin-left:5px;">✨ AI 개선안 보기</button>
                                             `;
                                             // 헤더 다음 위치에 버튼 넣기
                                             originalPre.parentNode.insertBefore(btnGroup, originalPre);
