@@ -693,12 +693,14 @@ document.addEventListener('DOMContentLoaded', function () {
                                         
                                         // 토글 버튼과 Diff 컨테이너 생성
                                         if (!pane.querySelector('.diff-container')) {
-                                            // Diff 컨테이너 삽입 (초기엔 숨김)
                                             const diffContainer = document.createElement('div');
                                             diffContainer.className = 'diff-container';
                                             diffContainer.style.display = 'none';
                                             diffContainer.style.background = '#fff';
                                             diffContainer.style.border = '1px solid #d0bfff';
+                                            // 추가: 가로 스크롤 허용 및 최대 너비 제한 (UI 깨짐 방지)
+                                            diffContainer.style.overflowX = 'auto';
+                                            diffContainer.style.maxWidth = '100%';
                                             diffContainer.innerHTML = diffHtml;
                                             pane.appendChild(diffContainer);
 
