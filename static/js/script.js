@@ -779,11 +779,6 @@ document.addEventListener('DOMContentLoaded', function () {
                                                     }
                                                 });
                                             }
-                                        } else { // Added missing else block
-                                            // If diff container already exists, ensure original view is shown by default
-                                            pane.querySelector('.config-text').style.display = 'block';
-                                            pane.querySelector('.diff-container').style.display = 'none';
-                                        }
                                         }
                                     }
                                 });
