@@ -626,6 +626,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 .then(data => {
                     if (data.error) {
                         outputElement.innerHTML = '<p style="color: red;">오류: ' + data.error + '</p>';
+                    } else {
                         // data.analysis는 이제 JSON 객체입니다 ({ html_report, modified_configs })
                         const analysisData = data.analysis;
                         let reportHtml = analysisData.html_report || "";
@@ -741,6 +742,10 @@ document.addEventListener('DOMContentLoaded', function () {
                                                     }
                                                 });
                                             }
+                                        } else { // Added missing else block
+                                            // If diff container already exists, ensure original view is shown by default
+                                            pane.querySelector('.config-text').style.display = 'block';
+                                            pane.querySelector('.diff-container').style.display = 'none';
                                         }
                                     }
                                 });
