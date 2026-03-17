@@ -388,7 +388,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <!-- 전체 분석 결과 표시 영역 -->
                 <div id="global-all-servers-analysis" style="display: none; margin-top: 20px; background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #d0bfff;">
                     <h4 style="color: #28a745; margin-top: 0;">진단 결과</h4>
-                    <pre class="analysis-content" style="white-space: pre-wrap; font-family: sans-serif; font-size: 14px; line-height: 1.6; color: #333;"></pre>
+                    <div class="analysis-content" style="font-family: sans-serif; font-size: 14px; line-height: 1.6; color: #333;"></div>
                 </div>
             </div>
         `;
@@ -482,7 +482,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             <!-- AI 분석 결과가 표시될 곳 (처음엔 숨김) -->
                             <div id="global-analysis-${index}" style="display: none; background: #f3f0ff; padding: 20px; border-radius: 8px; border: 1px solid #d0bfff; margin-bottom: 20px;">
                                 <h4 style="color: #6f42c1; margin-top: 0;">개별 서버 진단 결과 (${item.ip})</h4>
-                                <pre class="analysis-content" style="white-space: pre-wrap; font-family: sans-serif; font-size: 14px; line-height: 1.6; color: #333;"></pre>
+                                <div class="analysis-content" style="font-family: sans-serif; font-size: 14px; line-height: 1.6; color: #333;"></div>
                             </div>
                         </div>
                     `;
@@ -636,9 +636,12 @@ document.addEventListener('DOMContentLoaded', function () {
                                 </div>
                                 <div style="clear: both;"></div>
                             `;
-                            outputElement.innerHTML = tokenBadge + data.analysis;
+                            // AI가 마크다운 블록으로 감쌌을 경우 제거
+                            const strippedHtml = data.analysis.replace(/```html\n?/ig, '').replace(/```\n?/g, '').trim();
+                            outputElement.innerHTML = tokenBadge + strippedHtml;
                         } else {
-                            outputElement.innerHTML = data.analysis;
+                            const strippedHtml = data.analysis.replace(/```html\n?/ig, '').replace(/```\n?/g, '').trim();
+                            outputElement.innerHTML = strippedHtml;
                         }
                         outputElement.style.color = '#333';
                     }

@@ -262,7 +262,7 @@ def analyze_config():
 
 **중요: 모든 분석 결과와 설명은 반드시 한국어(Korean)로 작성하십시오.**
 구체적이고 실행 가능한 권장 사항을 제시하십시오.
-출력은 HTML 형식으로 제공하십시오."""
+출력은 HTML 형식으로 제공하되, 반드시 ```html 같은 마크다운 코드 블록 없이 순수 가독성 좋은 HTML 태그(h3, ul, li, strong 등)만 반환하십시오."""
 
         # 사용자 프롬프트: 실제 질문 내용
         user_prompt_template = data.get('user_prompt', config.get('azure_openai_user_prompt'))
