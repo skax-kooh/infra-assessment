@@ -260,15 +260,26 @@ def analyze_config():
 2. 가용성 구성
 3. 모범 사례 위반
 
-**중요: 모든 분석 결과와 설명은 반드시 한국어(Korean)로 작성하십시오.**
-구체적이고 실행 가능한 권장 사항을 제시하십시오.
-출력은 HTML 형식으로 제공하되, 반드시 ```html 같은 마크다운 코드 블록 없이 순수 가독성 좋은 HTML 태그(h3, ul, li, strong 등)만 반환하십시오."""
+**중요: 분석 결과는 반드시 아래 구조를 가진 유효한 JSON 형식으로 반환하십시오.**
+
+{
+  "html_report": "여기에 분석 결과 전체를 HTML 태그 (h3, ul, li 등)로 작성하십시오. 절대 마크다운(```html 등)을 포함하지 마십시오.",
+  "modified_configs": [
+    {
+      "path": "/etc/httpd/conf/httpd.conf",
+      "modified_content": "개선된 설정 파일의 전체 내용 (주석 포함 가능)"
+    }
+  ]
+}
+
+* 모든 요약/설명은 한국어(Korean)로 작성하십시오.
+* 수정할 필요가 없는 설정 파일은 `modified_configs` 목록에서 제외하십시오."""
 
         # 사용자 프롬프트: 실제 질문 내용
         user_prompt_template = data.get('user_prompt', config.get('azure_openai_user_prompt'))
         if not user_prompt_template:
             # 기본값 (한글)
-            user_prompt_template = """다음 아파치 설정 파일들을 **한국어로** 상세히 분석해 주세요.
+            user_prompt_template = """다음 아파치 설정 파일들을 **한국어로** 상세히 분석해 주시고, 반드시 JSON 형식으로 응답해 주세요.
 
 통합 설정 내용:
 {content}"""
@@ -288,8 +299,32 @@ def analyze_config():
         # 토큰 사용량 정보 추출
         usage = getattr(ai_msg, 'usage_metadata', {})
         
+        raw_response = ai_msg.content.strip()
+        
+        # AI가 마크다운 코드 블록(```json ... ```)으로 래핑한 경우 제거
+        if raw_response.startswith('```json'):
+            raw_response = raw_response[7:]
+        elif raw_response.startswith('```'):
+            raw_response = raw_response[3:]
+            
+        if raw_response.endswith('```'):
+            raw_response = raw_response[:-3]
+            
+        raw_response = raw_response.strip()
+
+        import json
+        try:
+            parsed_analysis = json.loads(raw_response)
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON 파싱 오류: {str(e)}\n원본 데이터: {raw_response}")
+            # 파싱 실패 시 원본 데이터를 그대로 html_report에 넣어서 반환하는 폴백 로직
+            parsed_analysis = {
+                "html_report": f"<p>AI 응답을 파싱하는 중 오류가 발생했습니다.</p><pre>{raw_response}</pre>",
+                "modified_configs": []
+            }
+        
         return jsonify({
-            'analysis': ai_msg.content,
+            'analysis': parsed_analysis,
             'usage': usage
         })
 

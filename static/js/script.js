@@ -603,8 +603,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // 로딩 상태 표시
             resultDiv.style.display = 'block';
-            outputElement.textContent = '분석 중...';
+            outputElement.innerHTML = '분석 중...';
             outputElement.style.color = '#333';
+
+            // 기존에 렌더링 된 Diff나 뱃지 등 초기화
+            document.querySelectorAll('.diff-container, .diff-toggle-btns').forEach(el => el.remove());
+            document.querySelectorAll('.ai-badge').forEach(el => el.remove());
 
             // 백엔드로 요청
             fetch('/infrastructure/web-server/analyze', {
@@ -622,7 +626,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 .then(data => {
                     if (data.error) {
                         outputElement.innerHTML = '<p style="color: red;">오류: ' + data.error + '</p>';
-                    } else {
+                        // data.analysis는 이제 JSON 객체입니다 ({ html_report, modified_configs })
+                        const analysisData = data.analysis;
+                        let reportHtml = analysisData.html_report || "";
+
                         // [수정] 토큰 사용량 표시
                         if (data.usage) {
                             const total = data.usage.total_tokens || 0;
@@ -636,14 +643,109 @@ document.addEventListener('DOMContentLoaded', function () {
                                 </div>
                                 <div style="clear: both;"></div>
                             `;
-                            // AI가 마크다운 블록으로 감쌌을 경우 제거
-                            const strippedHtml = data.analysis.replace(/```html\n?/ig, '').replace(/```\n?/g, '').trim();
-                            outputElement.innerHTML = tokenBadge + strippedHtml;
+                            // AI가 부분적으로 마크다운 블록으로 감쌌을 경우 제거
+                            reportHtml = reportHtml.replace(/```html\n?/ig, '').replace(/```\n?/g, '').trim();
+                            outputElement.innerHTML = tokenBadge + reportHtml;
                         } else {
-                            const strippedHtml = data.analysis.replace(/```html\n?/ig, '').replace(/```\n?/g, '').trim();
-                            outputElement.innerHTML = strippedHtml;
+                            reportHtml = reportHtml.replace(/```html\n?/ig, '').replace(/```\n?/g, '').trim();
+                            outputElement.innerHTML = reportHtml;
                         }
                         outputElement.style.color = '#333';
+
+                        // ----------------------------------------------------
+                        // ✨ AI 개선안 (Diff) 처리 로직
+                        // ----------------------------------------------------
+                        if (analysisData.modified_configs && Array.isArray(analysisData.modified_configs)) {
+                            analysisData.modified_configs.forEach(modConfig => {
+                                // 클라이언트 측에서 만든 path 형식("[서버 IP] /경로")과 매칭해야 함
+                                // 혹은 서버 IP 문자열이 포함되어 있는지 여부로 느슨하게 매칭 가능
+                                
+                                // 화면의 모든 pane 찾기
+                                const panes = document.querySelectorAll('.config-content-pane');
+                                panes.forEach(pane => {
+                                    const panePath = pane.getAttribute('data-path');
+                                    const serverIp = pane.getAttribute('data-server-ip');
+                                    const fullPanePath = `[${serverIp}] ${panePath}`;
+                                    const fullPanePath2 = `[서버: ${serverIp}] ${panePath}`;
+                                    
+                                    // AI가 응답한 경로와 현재 pane의 경로가 일치하면 Diff 생성
+                                    if (modConfig.path === panePath || 
+                                        modConfig.path === fullPanePath || 
+                                        modConfig.path === fullPanePath2) {
+                                        
+                                        // 원본 텍스트
+                                        const originalText = decodeURIComponent(pane.querySelector('.config-raw-content').innerHTML);
+                                        const newText = modConfig.modified_content;
+
+                                        // 1. jsdiff를 이용해 패치(Diff) 생성
+                                        const diffPatch = Diff.createPatch(panePath, originalText, newText, '원본', 'AI 개선안');
+                                        
+                                        // 2. diff2html을 이용해 UI 생성
+                                        const diffHtml = Diff2Html.html(diffPatch, {
+                                            drawFileList: false,
+                                            matching: 'lines',
+                                            outputFormat: 'side-by-side' // 또는 'line-by-line'
+                                        });
+
+                                        // 3. 기존 화면(original 뷰)을 감싸기
+                                        const originalPre = pane.querySelector('.config-text');
+                                        
+                                        // 토글 버튼과 Diff 컨테이너 생성
+                                        if (!pane.querySelector('.diff-container')) {
+                                            // Diff 컨테이너 삽입 (초기엔 숨김)
+                                            const diffContainer = document.createElement('div');
+                                            diffContainer.className = 'diff-container';
+                                            diffContainer.style.display = 'none';
+                                            diffContainer.style.background = '#fff';
+                                            diffContainer.style.border = '1px solid #d0bfff';
+                                            diffContainer.innerHTML = diffHtml;
+                                            pane.appendChild(diffContainer);
+
+                                            // 토글 버튼 삽입
+                                            const btnGroup = document.createElement('div');
+                                            btnGroup.className = 'diff-toggle-btns';
+                                            btnGroup.style.marginBottom = '10px';
+                                            btnGroup.innerHTML = `
+                                                <button type="button" class="btn-secondary toggle-orig-btn" style="background: #6c757d; font-size:12px;">📄 원본 보기</button>
+                                                <button type="button" class="btn-primary toggle-diff-btn" style="background: #6f42c1; font-size:12px; margin-left:5px;">✨ AI 개선안 보기 (Diff)</button>
+                                            `;
+                                            // 헤더 다음 위치에 버튼 넣기
+                                            originalPre.parentNode.insertBefore(btnGroup, originalPre);
+                                            
+                                            // 이벤트 리스너
+                                            btnGroup.querySelector('.toggle-orig-btn').addEventListener('click', () => {
+                                                originalPre.style.display = 'block';
+                                                diffContainer.style.display = 'none';
+                                            });
+                                            btnGroup.querySelector('.toggle-diff-btn').addEventListener('click', () => {
+                                                originalPre.style.display = 'none';
+                                                diffContainer.style.display = 'block';
+                                            });
+                                            
+                                            // 4. 왼쪽 메뉴(li 파일 목록)에 ✨ AI 뱃지 추가
+                                            // li 요소들을 모두 뒤져서 이 pane과 매칭되는 것을 찾음
+                                            const container = pane.closest('.config-files-container');
+                                            if (container) {
+                                                const lis = container.querySelectorAll('li');
+                                                lis.forEach(li => {
+                                                    // onclick 텍스트로 contentId 찾기
+                                                    if (li.getAttribute('onclick').includes(pane.id)) {
+                                                        // 뱃지를 붙임
+                                                        if (!li.querySelector('.ai-badge')) {
+                                                            const badge = document.createElement('span');
+                                                            badge.className = 'ai-badge';
+                                                            badge.style.cssText = 'font-size: 10px; background: #6f42c1; color: white; padding: 2px 4px; border-radius: 4px; margin-left: 5px; vertical-align: middle;';
+                                                            badge.textContent = '✨ AI';
+                                                            li.appendChild(badge);
+                                                        }
+                                                    }
+                                                });
+                                            }
+                                        }
+                                    }
+                                });
+                            });
+                        }
                     }
                 })
                 .catch((error) => {
