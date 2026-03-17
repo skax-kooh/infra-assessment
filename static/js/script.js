@@ -654,84 +654,90 @@ document.addEventListener('DOMContentLoaded', function () {
                         outputElement.style.color = '#333';
 
                         // ----------------------------------------------------
-                        // ✨ AI 개선안 (Diff) 처리 로직
+                        // ✨ AI 개선안 (인라인 가이드) 처리 로직
                         // ----------------------------------------------------
-                        if (analysisData.modified_configs && Array.isArray(analysisData.modified_configs)) {
-                            analysisData.modified_configs.forEach(modConfig => {
-                                // 클라이언트 측에서 만든 path 형식("[서버 IP] /경로")과 매칭해야 함
-                                // 혹은 서버 IP 문자열이 포함되어 있는지 여부로 느슨하게 매칭 가능
+                        if (analysisData.recommendations && Array.isArray(analysisData.recommendations)) {
+                            // 화면의 모든 pane 찾기
+                            const panes = document.querySelectorAll('.config-content-pane');
+                            panes.forEach(pane => {
+                                const panePath = pane.getAttribute('data-path');
+                                const serverIp = pane.getAttribute('data-server-ip');
+                                const fullPanePath = `[${serverIp}] ${panePath}`;
+                                const fullPanePath2 = `[서버: ${serverIp}] ${panePath}`;
                                 
-                                // 화면의 모든 pane 찾기
-                                const panes = document.querySelectorAll('.config-content-pane');
-                                panes.forEach(pane => {
-                                    const panePath = pane.getAttribute('data-path');
-                                    const serverIp = pane.getAttribute('data-server-ip');
-                                    const fullPanePath = `[${serverIp}] ${panePath}`;
-                                    const fullPanePath2 = `[서버: ${serverIp}] ${panePath}`;
+                                // 이 pane에 해당하는 권고안 찾기
+                                const recsForPane = analysisData.recommendations.filter(rec => 
+                                    rec.path === panePath || 
+                                    rec.path === fullPanePath || 
+                                    rec.path === fullPanePath2
+                                );
+
+                                if (recsForPane.length > 0) {
+                                    // 원본 텍스트
+                                    const originalText = decodeURIComponent(pane.querySelector('.config-raw-content').innerHTML);
                                     
-                                    // AI가 응답한 경로와 현재 pane의 경로가 일치하면 Diff 생성
-                                    if (modConfig.path === panePath || 
-                                        modConfig.path === fullPanePath || 
-                                        modConfig.path === fullPanePath2) {
-                                        
-                                        // 원본 텍스트
-                                        const originalText = decodeURIComponent(pane.querySelector('.config-raw-content').innerHTML);
-                                        const newText = modConfig.modified_content;
+                                    // HTML 이스케이프 함수
+                                    const escapeHtml = (unsafe) => {
+                                        if(!unsafe) return '';
+                                        return unsafe
+                                             .replace(/&/g, "&amp;")
+                                             .replace(/</g, "&lt;")
+                                             .replace(/>/g, "&gt;")
+                                             .replace(/"/g, "&quot;")
+                                             .replace(/'/g, "&#039;");
+                                    };
 
-                                        // 1. jsdiff를 이용해 라인별 차이(Diff) 생성 (원본 그대로 사용)
-                                        const diff = Diff.diffLines(originalText, newText);
-                                        
-                                        // 2. 간단한 HTML 생성 (삭제는 빨간색, 추가는 초록색)
-                                        let diffHtml = '<pre style="white-space: pre-wrap; word-wrap: break-word; font-family: monospace; font-size: 13px; line-height: 1.5; padding: 15px; margin: 0; background: #f8f8f8; color: #333;">';
-                                        
-                                        diff.forEach(part => {
-                                            // 삭제된 라인은 붉은색 바탕 (- 표시)
-                                            // 추가된 라인은 녹색 바탕 (+ 표시)
-                                            // 일반 라인은 투명
-                                            let bgColor = part.added ? '#e6ffe6' : part.removed ? '#ffe6e6' : 'transparent';
-                                            let textColor = part.added ? '#006600' : part.removed ? '#cc0000' : '#333';
-                                            let prefix = part.added ? '+ ' : part.removed ? '- ' : '  ';
-                                            
-                                            // HTML 이스케이프 함수
-                                            const escapeHtml = (unsafe) => {
-                                                if(!unsafe) return '';
-                                                return unsafe
-                                                     .replace(/&/g, "&amp;")
-                                                     .replace(/</g, "&lt;")
-                                                     .replace(/>/g, "&gt;")
-                                                     .replace(/"/g, "&quot;")
-                                                     .replace(/'/g, "&#039;");
-                                            };
-                                            
-                                            // 라인별로 처리하여 prefix를 붙여줌
-                                            let lines = part.value.split('\n');
-                                            // 마지막 빈 줄 제거 (split 특성상 끝에 빈 문자열이 생김)
-                                            if (lines[lines.length - 1] === '') {
-                                                lines.pop();
-                                            }
-                                            
-                                            lines.forEach(line => {
-                                                diffHtml += `<div style="background-color: ${bgColor}; color: ${textColor}; padding: 0 5px;">${prefix}${escapeHtml(line)}</div>`;
-                                            });
-                                        });
-                                        
-                                        diffHtml += '</pre>';
+                                    let enhancedHtml = escapeHtml(originalText);
 
-                                        // 3. 기존 화면(original 뷰)을 감싸기
-                                        const originalPre = pane.querySelector('.config-text');
+                                    recsForPane.forEach(rec => {
+                                        if(!rec.original_match) return;
+                                        const searchStr = escapeHtml(rec.original_match);
+                                        const replacementHtml = escapeHtml(rec.new_content || '');
+                                        const reasonHtml = escapeHtml(rec.reason || '');
+
+                                        let hintHtml = '';
+                                        let styledSearchStr = searchStr;
                                         
-                                        // 토글 버튼과 Diff 컨테이너 생성
-                                        if (!pane.querySelector('.diff-container')) {
-                                            const diffContainer = document.createElement('div');
-                                            diffContainer.className = 'diff-container';
-                                            diffContainer.style.display = 'none';
-                                            diffContainer.style.background = '#f8f8f8';
-                                            diffContainer.style.border = '1px solid #ddd';
-                                            diffContainer.style.borderRadius = '6px';
-                                            diffContainer.style.overflowX = 'auto';
-                                            diffContainer.style.maxWidth = '100%';
-                                            diffContainer.innerHTML = diffHtml;
-                                            pane.appendChild(diffContainer);
+                                        const type = (rec.type || '').toLowerCase();
+
+                                        if (type === 'delete' || type === '삭제') {
+                                            hintHtml = `<div style="background-color: #ffe6e6; color: #cc0000; padding: 10px; margin: 5px 0; border-left: 4px solid #cc0000; font-family: sans-serif; border-radius: 4px;"><strong>[삭제 권고]</strong> ${reasonHtml}</div>`;
+                                            // Highlight the original text in red with strikethrough
+                                            styledSearchStr = `<span style="background-color: #ffe6e6; color: #cc0000; text-decoration: line-through;">${searchStr}</span>\n${hintHtml}`;
+                                            enhancedHtml = enhancedHtml.replace(searchStr, styledSearchStr);
+
+                                        } else if (type === 'add' || type === '추가') {
+                                            hintHtml = `<div style="background-color: #e6ffe6; color: #006600; padding: 10px; margin: 5px 0; border-left: 4px solid #006600; font-family: sans-serif; border-radius: 4px;"><strong>[추가 권고]</strong> ${reasonHtml}<br/><pre style="background: #f0fff0; border: 1px dotted #006600; margin-top: 8px; padding: 8px; font-family: monospace;">${replacementHtml}</pre></div>`;
+                                            // Insert right after the matched text
+                                            styledSearchStr = `${searchStr}\n${hintHtml}`;
+                                            enhancedHtml = enhancedHtml.replace(searchStr, styledSearchStr);
+
+                                        } else { // modify / 변경
+                                            hintHtml = `<div style="background-color: #e6ffe6; color: #006600; padding: 10px; margin: 5px 0; border-left: 4px solid #006600; font-family: sans-serif; border-radius: 4px;"><strong>[변경 권고]</strong> ${reasonHtml}<br/><pre style="background: #f0fff0; border: 1px dotted #006600; margin-top: 8px; padding: 8px; font-family: monospace;">${replacementHtml}</pre></div>`;
+                                            // Highlight the old text as deleted, and add the hint below it
+                                            styledSearchStr = `<span style="background-color: #ffe6e6; color: #cc0000; text-decoration: line-through;">${searchStr}</span>\n${hintHtml}`;
+                                            enhancedHtml = enhancedHtml.replace(searchStr, styledSearchStr);
+                                        }
+                                    });
+
+                                    // 생성된 HTML을 감싸는 컨테이너
+                                    const diffHtml = `<pre style="white-space: pre-wrap; word-wrap: break-word; font-family: monospace; font-size: 13px; line-height: 1.5; padding: 15px; margin: 0; background: #f8f8f8; color: #333;">${enhancedHtml}</pre>`;
+
+                                    // 3. 기존 화면(original 뷰)을 감싸기
+                                    const originalPre = pane.querySelector('.config-text');
+                                    
+                                    // 토글 버튼과 가이드 컨테이너 생성
+                                    if (!pane.querySelector('.diff-container')) {
+                                        const diffContainer = document.createElement('div');
+                                        diffContainer.className = 'diff-container';
+                                        diffContainer.style.display = 'none';
+                                        diffContainer.style.background = '#f8f8f8';
+                                        diffContainer.style.border = '1px solid #ddd';
+                                        diffContainer.style.borderRadius = '6px';
+                                        diffContainer.style.overflowX = 'auto';
+                                        diffContainer.style.maxWidth = '100%';
+                                        diffContainer.innerHTML = diffHtml;
+                                        pane.appendChild(diffContainer);
 
                                             // 토글 버튼 삽입
                                             const btnGroup = document.createElement('div');
@@ -778,9 +784,9 @@ document.addEventListener('DOMContentLoaded', function () {
                                             pane.querySelector('.config-text').style.display = 'block';
                                             pane.querySelector('.diff-container').style.display = 'none';
                                         }
+                                        }
                                     }
                                 });
-                            });
                         }
                     }
                 })

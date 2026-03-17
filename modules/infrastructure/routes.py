@@ -265,17 +265,20 @@ def analyze_config():
 **중요: 분석 결과는 반드시 아래 구조를 가진 유효한 JSON 형식으로 반환하십시오.**
 
 {
-  "html_report": "여기에 분석 결과 전체를 HTML 태그 (h3, ul, li 등)로 작성하십시오. 절대 마크다운(```html 등)을 포함하지 마십시오.",
-  "modified_configs": [
+  "html_report": "여기에 전체 분석 결과 요약을 HTML 태그 (h3, ul, li 등)로 작성하십시오. 마크다운을 섞지 마십시오.",
+  "recommendations": [
     {
       "path": "/etc/httpd/conf/httpd.conf",
-      "modified_content": "개선된 설정 파일의 전체 내용 (주석 포함 가능)"
+      "type": "modify", /* "add", "modify", "delete" 중 하나 */
+      "original_match": "수정/삭제 대상이 되는 원본 설정 파일의 정확한 한글자도 틀리지 않은 텍스트 조각 (추가일 경우 삽입 위치 바로 위 텍스트)",
+      "new_content": "새로 들어가야 할 코드 내용 (삭제일 경우 빈 문자열)",
+      "reason": "왜 이렇게 수정하는지에 대한 이유 설명"
     }
   ]
 }
 
 * 모든 요약/설명은 한국어(Korean)로 작성하십시오.
-* 수정할 필요가 없는 설정 파일은 `modified_configs` 목록에서 제외하십시오."""
+* 개별 파일의 전체 내용을 다시 반환하지 마십시오. 오직 '변경이 필요한 부분'만 recommendations 배열에 나열하십시오."""
 
         # 사용자 프롬프트: 실제 질문 내용
         user_prompt_template = data.get('user_prompt', config.get('azure_openai_user_prompt'))
@@ -326,7 +329,7 @@ def analyze_config():
             # 파싱 실패 시 원본 데이터를 그대로 html_report에 넣어서 반환하는 폴백 로직
             parsed_analysis = {
                 "html_report": f"<p>AI 응답을 파싱하는 중 오류가 발생했습니다.</p><pre>{raw_response}</pre>",
-                "modified_configs": []
+                "recommendations": []
             }
         
         return jsonify({
