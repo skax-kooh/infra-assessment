@@ -238,9 +238,12 @@ def analyze_config():
             combined_content += f"\n--- 파일 끝: {path} ---\n"
 
         # 2. Azure OpenAI 클라이언트 생성
+        raw_endpoint = config.get('azure_openai_endpoint', '').strip().rstrip('/')
+        logger.info(f"Using endpoint: {raw_endpoint}")
+
         llm = AzureChatOpenAI(
             azure_deployment=config['azure_openai_deployment'],
-            azure_endpoint=config['azure_openai_endpoint'],
+            azure_endpoint=raw_endpoint,
             api_key=config['azure_openai_api_key'],
             api_version=config['azure_openai_api_version'],
             temperature=0,      # 창의성 낮춤 (정확한 분석 위해)
