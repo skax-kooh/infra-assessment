@@ -4,6 +4,8 @@ from langchain_core.messages import HumanMessage
 from modules.config_store import config, save_config, refresh_config
 import logging
 import traceback
+import asyncio
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -93,3 +95,79 @@ def test_llm_connection():
         logger.error(f"LLM 연결 테스트 중 오류 발생: {str(e)}")
         logger.error(traceback.format_exc())
         return jsonify({'status': 'error', 'message': f'연결 실패: {str(e)}'}), 500
+
+
+# ---------------------------------------------------------------------------
+# MCP 프롬프트 서버 연동 (포트 8000)
+# ---------------------------------------------------------------------------
+
+MCP_SERVER_URL = "http://localhost:8000/prompt/mcp"
+
+
+def _call_mcp_tool(tool_name: str, args: dict):
+    """fastmcp Client(async)를 동기 Flask 컨텍스트에서 호출하는 래퍼."""
+    try:
+        from fastmcp import Client as McpClient
+    except ImportError:
+        raise RuntimeError("fastmcp 패키지가 설치되지 않았습니다. (.venv/bin/pip install fastmcp)")
+
+    async def _inner():
+        async with McpClient(MCP_SERVER_URL) as client:
+            result = await client.call_tool(tool_name, args)
+            return json.loads(result.content[0].text)
+    return asyncio.run(_inner())
+
+
+@settings_bp.route('/prompt/generate', methods=['POST'])
+def generate_prompt():
+    """
+    [AI 프롬프트 생성] - MCP generate_prompt 도구 호출
+    Body: { "intent": "진단 의도 텍스트" }
+    """
+    try:
+        data = request.json or {}
+        intent = data.get('intent', '').strip()
+        if not intent:
+            return jsonify({'status': 'error', 'message': '진단 의도(intent)를 입력해주세요.'}), 400
+
+        # MCP 서버는 config.json을 직접 읽으므로 별도 환경변수 설정 불필요
+        result = _call_mcp_tool('generate_prompt', {'intent': intent})
+        return jsonify({'status': 'success', 'data': result})
+
+    except ConnectionRefusedError:
+        return jsonify({'status': 'error', 'message': 'MCP 서버에 연결할 수 없습니다. (포트 8000 확인)'}), 503
+    except Exception as e:
+        logger.error(f"generate_prompt 오류: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@settings_bp.route('/prompt/improve', methods=['POST'])
+def improve_prompt():
+    """
+    [AI 프롬프트 개선] - MCP improve_prompt 도구 호출
+    Body: { "current_prompt": "...", "feedback": "...", "prompt_type": "system"|"user" }
+    """
+    try:
+        data = request.json or {}
+        current_prompt = data.get('current_prompt', '').strip()
+        feedback = data.get('feedback', '').strip()
+        prompt_type = data.get('prompt_type', 'system')
+
+        if not current_prompt or not feedback:
+            return jsonify({'status': 'error', 'message': '현재 프롬프트와 개선 요청사항을 입력해주세요.'}), 400
+
+        # MCP 서버는 config.json을 직접 읽으므로 별도 환경변수 설정 불필요
+        result = _call_mcp_tool('improve_prompt', {
+            'current_prompt': current_prompt,
+            'feedback': feedback,
+            'prompt_type': prompt_type
+        })
+        return jsonify({'status': 'success', 'data': result})
+
+    except ConnectionRefusedError:
+        return jsonify({'status': 'error', 'message': 'MCP 서버에 연결할 수 없습니다. (포트 8000 확인)'}), 503
+    except Exception as e:
+        logger.error(f"improve_prompt 오류: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({'status': 'error', 'message': str(e)}), 500

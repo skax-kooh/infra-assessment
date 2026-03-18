@@ -135,4 +135,124 @@ export function attachAssessmentListeners() {
                 });
         });
     }
+
+    // -------------------------------------------------------------------------
+    // AI 프롬프트 생성/개선 기능 (MCP 서버 연동)
+    // -------------------------------------------------------------------------
+
+    /** 상태 메시지 표시 헬퍼 */
+    function showPromptStatus(el, msg, isError = false) {
+        el.style.display = 'block';
+        el.style.color = isError ? '#cc0000' : '#1565c0';
+        el.textContent = msg;
+    }
+
+    // [✨ 생성] 버튼 - MCP generate_prompt 호출
+    const generateBtn = document.getElementById('generate-prompt-btn');
+    if (generateBtn) {
+        generateBtn.addEventListener('click', function () {
+            const intentInput = document.getElementById('prompt-intent-input');
+            const statusEl = document.getElementById('generate-prompt-status');
+            const intent = intentInput ? intentInput.value.trim() : '';
+
+            if (!intent) {
+                showPromptStatus(statusEl, '진단 의도를 입력해주세요.', true);
+                return;
+            }
+
+            generateBtn.disabled = true;
+            generateBtn.textContent = '생성 중...';
+            showPromptStatus(statusEl, 'MCP 서버에 요청 중...', false);
+
+            fetch('/settings/prompt/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ intent })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        const d = data.data;
+                        if (d.system_prompt) {
+                            document.getElementById('ai-system-prompt').value = d.system_prompt;
+                        }
+                        if (d.user_prompt) {
+                            document.getElementById('ai-user-prompt').value = d.user_prompt;
+                        }
+                        showPromptStatus(statusEl, '✅ 프롬프트가 생성되었습니다!', false);
+                    } else {
+                        showPromptStatus(statusEl, '❌ ' + data.message, true);
+                    }
+                })
+                .catch(err => showPromptStatus(statusEl, '❌ 오류: ' + err.message, true))
+                .finally(() => {
+                    generateBtn.disabled = false;
+                    generateBtn.textContent = '✨ 생성';
+                });
+        });
+    }
+
+    // [🔧 AI 개선] 버튼들 - 개선 패널 열기
+    const improveBtns = document.querySelectorAll('.improve-prompt-btn');
+    const improvePanel = document.getElementById('improve-prompt-panel');
+    const improveTargetInput = document.getElementById('improve-target-type');
+
+    improveBtns.forEach(btn => {
+        btn.addEventListener('click', function () {
+            if (!improvePanel) return;
+            improveTargetInput.value = this.dataset.target;  // "system" or "user"
+            improvePanel.style.display = 'block';
+            document.getElementById('improve-feedback-input').focus();
+        });
+    });
+
+    // [취소] 버튼
+    const cancelImproveBtn = document.getElementById('cancel-improve-btn');
+    if (cancelImproveBtn && improvePanel) {
+        cancelImproveBtn.addEventListener('click', () => {
+            improvePanel.style.display = 'none';
+        });
+    }
+
+    // [개선 실행] 버튼 - MCP improve_prompt 호출
+    const doImproveBtn = document.getElementById('do-improve-prompt-btn');
+    if (doImproveBtn) {
+        doImproveBtn.addEventListener('click', function () {
+            const statusEl = document.getElementById('improve-prompt-status');
+            const promptType = improveTargetInput ? improveTargetInput.value : 'system';
+            const textareaId = promptType === 'system' ? 'ai-system-prompt' : 'ai-user-prompt';
+            const currentPrompt = document.getElementById(textareaId)?.value.trim() || '';
+            const feedback = document.getElementById('improve-feedback-input')?.value.trim() || '';
+
+            if (!currentPrompt || !feedback) {
+                showPromptStatus(statusEl, '현재 프롬프트와 개선 요청사항을 입력해주세요.', true);
+                return;
+            }
+
+            doImproveBtn.disabled = true;
+            doImproveBtn.textContent = '개선 중...';
+            showPromptStatus(statusEl, 'MCP 서버에 요청 중...', false);
+
+            fetch('/settings/prompt/improve', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ current_prompt: currentPrompt, feedback, prompt_type: promptType })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        document.getElementById(textareaId).value = data.data.improved_prompt;
+                        showPromptStatus(statusEl, `✅ ${data.data.changes_summary || '개선 완료!'}`, false);
+                        setTimeout(() => { if (improvePanel) improvePanel.style.display = 'none'; }, 2000);
+                    } else {
+                        showPromptStatus(statusEl, '❌ ' + data.message, true);
+                    }
+                })
+                .catch(err => showPromptStatus(statusEl, '❌ 오류: ' + err.message, true))
+                .finally(() => {
+                    doImproveBtn.disabled = false;
+                    doImproveBtn.textContent = '개선 실행';
+                });
+        });
+    }
 }

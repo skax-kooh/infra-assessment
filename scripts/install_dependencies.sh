@@ -13,7 +13,7 @@ fi
 # 가상환경 활성화 후 패키지 설치
 source venv/bin/activate
 pip install --upgrade pip
-pip install gunicorn
+pip install gunicorn uvicorn
 pip install -r requirements.txt
 deactivate
 
