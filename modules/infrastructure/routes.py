@@ -20,7 +20,7 @@ infrastructure_bp = Blueprint('infrastructure', __name__)
 
 def resolve_path(path, server_root):
     """
-    경로를 절대 경로로 변환하는 함수입니다.
+    절대 경로로 변환하는 함수입니다.
     경로가 '/'로 시작하지 않으면(상대 경로), ServerRoot와 합칩니다.
     예: conf/httpd.conf -> /etc/httpd/conf/httpd.conf
     """
