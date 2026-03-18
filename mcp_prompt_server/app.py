@@ -1,7 +1,6 @@
 """
 app.py - MCP Prompt Server
 fastmcp 3.x API에 맞게 작성.
-(mcp_image_gen은 fastmcp 2.x 기준이므로 API 차이 주의)
 
 실행 방법:
     cd /Users/P039321/workspace/infra-assessment
