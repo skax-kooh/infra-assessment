@@ -1,0 +1,8 @@
+{
+    "azure_openai_endpoint": "https://your-resource-name.openai.azure.com/",
+    "azure_openai_api_key": "YOUR_API_KEY_HERE",
+    "azure_openai_deployment": "gpt-4o",
+    "azure_openai_api_version": "2024-02-15-preview",
+    "azure_openai_system_prompt": "",
+    "azure_openai_user_prompt": ""
+}
