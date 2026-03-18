@@ -290,7 +290,21 @@ def analyze_config():
 {content}"""
 
         # {content} 부분을 실제 설정 파일 내용으로 바꿔치기
-        user_prompt = user_prompt_template.replace('{content}', combined_content)
+        # 대소문자나 공백이 섞였을 경우를 대비해 정규식 치환 시도
+        placeholder_pattern = re.compile(r'\{\s*content\s*\}', re.IGNORECASE)
+        
+        if placeholder_pattern.search(user_prompt_template):
+            user_prompt = placeholder_pattern.sub(combined_content, user_prompt_template)
+            logger.info("프롬프트 템플릿의 {content} 위치에 설정을 삽입했습니다.")
+        else:
+            # 플레이스홀더가 없으면 에러 방지를 위해 맨 뒤에 강제 결합
+            user_prompt = f"{user_prompt_template}\n\n[분석 대상 설정 내용]:\n{combined_content}"
+            logger.warning("프롬프트 템플릿에서 {content}를 찾을 수 없어 하단에 강제 결합했습니다.")
+
+        # 로깅 (프롬프트 길이 및 내용 일부 확인)
+        logger.info(f"최종 전송 프롬프트 길이: {len(user_prompt)}자")
+        if len(combined_content.strip()) < 50:
+            logger.warning("주의: 결합된 설정 파일 내용(combined_content)이 매우 짧습니다.")
 
         # 4. AI에게 메시지 전송
         messages = [
