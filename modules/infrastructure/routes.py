@@ -305,7 +305,10 @@ def analyze_config():
             user_prompt = f"{user_prompt_template}\n\n[분석 대상 설정 내용]:\n{combined_content}"
             logger.warning("프롬프트 템플릿에서 {content}를 찾을 수 없어 하단에 강제 결합했습니다.")
 
-        # 로깅 (프롬프트 길이 및 내용 일부 확인)
+        # 로깅 (프리뷰 및 전체 프롬프트 기록)
+        logger.info(f"--- AI 분석 요청 시작 ---")
+        logger.info(f"System Prompt:\n{system_prompt}")
+        logger.info(f"User Prompt:\n{user_prompt}")
         logger.info(f"최종 전송 프롬프트 길이: {len(user_prompt)}자")
         if len(combined_content.strip()) < 50:
             logger.warning("주의: 결합된 설정 파일 내용(combined_content)이 매우 짧습니다.")
