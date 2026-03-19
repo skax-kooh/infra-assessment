@@ -13,6 +13,11 @@ from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
 
 from mcp_prompt_server.tools.prompt_generator import generate_prompt, improve_prompt
+from mcp_prompt_server.tools.skill_manager import (
+    list_skills,
+    get_skill,
+    generate_prompt_with_skill,
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -25,7 +30,14 @@ def create_app():
         version="1.0.0",
         instructions="""
 이 서버는 Apache 웹서버 진단용 AI 프롬프트를 생성/개선하는 도구를 제공합니다.
-- generate_prompt(intent): 진단 의도를 입력하면 최적화된 시스템/유저 프롬프트를 생성합니다.
+
+[Skills 기반 도구 (추천)]
+- list_skills(): 사용 가능한 진단 스킬 목록을 반환합니다. (보안, 가용성, 성능, SSL/TLS)
+- get_skill(skill_name): 특정 스킬의 system_prompt와 user_prompt를 반환합니다.
+- generate_prompt_with_skill(intent, skill_name): 스킬 베이스에 추가 의도를 반영한 프롬프트를 반환합니다.
+
+[LLM 생성 도구]
+- generate_prompt(intent): 진단 의도를 입력하면 LLM이 최적화된 프롬프트를 생성합니다.
 - improve_prompt(current_prompt, feedback, prompt_type): 기존 프롬프트를 피드백에 따라 개선합니다.
 """
     )
@@ -39,7 +51,12 @@ def create_app():
         )
     ]
 
-    # MCP 도구 등록
+    # MCP 도구 등록 - Skills 기반 도구
+    mcp.tool(list_skills)
+    mcp.tool(get_skill)
+    mcp.tool(generate_prompt_with_skill)
+
+    # MCP 도구 등록 - LLM 생성 도구
     mcp.tool(generate_prompt)
     mcp.tool(improve_prompt)
 
