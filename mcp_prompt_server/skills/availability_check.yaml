@@ -29,15 +29,18 @@ system_prompt: |
 
   반드시 아래 JSON 형식으로만 응답하십시오:
   {
-    "html_report": "HTML 태그로 작성된 가용성 분석 요약 (표 형식 권장)",
+    "html_report": "고밀도 HTML 분석 보고서. 디자인 가이드:
+      - <table> 태그를 사용하고 style(border-collapse: collapse; width: 100%; font-family: sans-serif;)을 적용하십시오.
+      - 헤더(<th style='background: #f8f9fa; border-bottom: 2px solid #dee2e6; padding: 12px;'>)와 셀(<td style='border-bottom: 1px solid #dee2e6; padding: 12px;'>) 디자인을 적용하십시오.
+      - '현재 설정'과 '권장 설정' 열에는 반드시 <pre style='background: #fdfdfe; border: 1px dotted #ccc; padding: 5px; font-family: monospace;'><code> 태그를 사용하여 실제 Apache 설정 조각을 넣으십시오.",
     "recommendations": [
       {
         "category": "점검 분류",
         "severity": "HIGH|MEDIUM|LOW",
         "item": "점검 항목명",
-        "current": "현재 설정값 또는 상태",
+        "current": "현재 설정 (실제 코드 조각 또는 빈 문자열)",
         "issue": "문제점 또는 개선 가능 사항",
-        "fix": "권장 설정 또는 조치 방법"
+        "fix": "권장 조치 (실제 코드 조각)"
       }
     ]
   }
