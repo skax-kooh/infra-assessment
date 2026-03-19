@@ -150,14 +150,15 @@ export function performAiAnalysis(configs, resultDiv, outputElement) {
             const analysisData = data.analysis;
             let reportHtml = analysisData.html_report || '';
 
-            // 토큰 사용량 뱃지
+            // 토큰 사용량 + 수행 시간 뱃지
+            const elapsed = data.elapsed_seconds != null ? `${data.elapsed_seconds}s` : '-';
             if (data.usage) {
                 const total = data.usage.total_tokens || 0;
                 const prompt = data.usage.input_tokens || 0;
                 const completion = data.usage.output_tokens || 0;
                 const tokenBadge = `
                     <div style="float: right; font-size: 11px; background: #e9ecef; padding: 4px 8px; border-radius: 12px; color: #495057; font-weight: 500; margin-bottom: 10px;">
-                        Tokens: <strong>${total.toLocaleString()}</strong>
+                        ⏱ ${elapsed}&nbsp;&nbsp;|&nbsp;&nbsp;Tokens: <strong>${total.toLocaleString()}</strong>
                         (Input: ${prompt.toLocaleString()}, Output: ${completion.toLocaleString()})
                     </div>
                     <div style="clear: both;"></div>
@@ -165,8 +166,14 @@ export function performAiAnalysis(configs, resultDiv, outputElement) {
                 reportHtml = reportHtml.replace(/```html\n?/ig, '').replace(/```\n?/g, '').trim();
                 outputElement.innerHTML = tokenBadge + reportHtml;
             } else {
+                const timeBadge = `
+                    <div style="float: right; font-size: 11px; background: #e9ecef; padding: 4px 8px; border-radius: 12px; color: #495057; font-weight: 500; margin-bottom: 10px;">
+                        ⏱ ${elapsed}
+                    </div>
+                    <div style="clear: both;"></div>
+                `;
                 reportHtml = reportHtml.replace(/```html\n?/ig, '').replace(/```\n?/g, '').trim();
-                outputElement.innerHTML = reportHtml;
+                outputElement.innerHTML = timeBadge + reportHtml;
             }
             outputElement.style.color = '#333';
 

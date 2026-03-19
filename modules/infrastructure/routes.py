@@ -4,6 +4,7 @@ import re
 import os
 import logging
 import traceback
+import time
 from langchain_openai import AzureChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
 # 설정 저장소에서 설정을 가져옵니다.
@@ -318,10 +319,12 @@ def analyze_config():
         logger.info(f"Azure OpenAI에 분석 요청을 전송합니다 (모델: {config['azure_openai_deployment']})...")
 
         # 5. 결과 받아서 반환
+        t_start = time.perf_counter()
         ai_msg = llm.invoke(messages)
-        
-        logger.info("Azure OpenAI 분석 응답 수신 완료")
-        
+        elapsed_seconds = round(time.perf_counter() - t_start, 1)
+
+        logger.info(f"Azure OpenAI 분석 응답 수신 완료 (수행 시간: {elapsed_seconds}s)")
+
         # 토큰 사용량 정보 추출
         usage = getattr(ai_msg, 'usage_metadata', {})
         
@@ -351,7 +354,8 @@ def analyze_config():
         
         return jsonify({
             'analysis': parsed_analysis,
-            'usage': usage
+            'usage': usage,
+            'elapsed_seconds': elapsed_seconds
         })
 
     except Exception as e:
