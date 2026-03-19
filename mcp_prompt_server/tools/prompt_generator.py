@@ -108,11 +108,11 @@ def generate_prompt(intent: str) -> dict:
 규칙:
 - 모든 프롬프트 텍스트는 **반드시 한국어(Korean)**로 작성하십시오. 영어로 전환하지 마십시오.
 - user_prompt에는 반드시 {content} 플레이스홀더를 포함하십시오.
-- system_prompt에는 반드시 아래 JSON 응답 형식을 포함하고, 디자인 가이드를 준수하십시오:
-  {
-    "html_report": "고밀도 HTML 분석 보고서 (<table> 사용, <pre><code>로 실제 설정 조폭 명시)",
-    "recommendations": [{"current": "실제 코드", "fix": "실제 코드", ...}]
-  }
+- system_prompt에는 반드시 아래 지침을 포함한 HTML 리포트 형식을 고정하십시오:
+  1) 상단에 [총평] 섹션 (<div style='...'>) 추가
+  2) 이후 상세 분석 결과 Table (<table>) 추가
+  3) '현재 설정' 셀에는 원본 파일명(예: httpd.conf:L10)과 실제 설정 코드 조각(<pre><code>)을 함께 명시
+  4) '권장 설정' 셀에도 실제 개선 코드 조각(<pre><code>) 명시
 - 마크다운 코드블록 없이 순수 JSON만 반환하십시오.""")
 
     human_msg = HumanMessage(content=f"진단 의도: {intent}")

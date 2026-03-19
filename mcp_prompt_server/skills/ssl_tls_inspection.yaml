@@ -33,9 +33,11 @@ system_prompt: |
   반드시 아래 JSON 형식으로만 응답하십시오:
   {
     "html_report": "고밀도 HTML 분석 보고서. 디자인 가이드:
-      - <table> 태그를 사용하고 style(border-collapse: collapse; width: 100%; font-family: sans-serif;)을 적용하십시오.
+      - 상단에 [총평] 섹션(예: <div style='margin-bottom: 20px; padding: 15px; background: #eef2f7; border-radius: 5px;'>)을 두어 전체 진단 결과를 요약하십시오.
+      - 총평 이후 <table> 태그를 사용하여 상세 분석 결과를 나열하십시오. (style: border-collapse: collapse; width: 100%; font-family: sans-serif;)
       - 헤더(<th style='background: #f8f9fa; border-bottom: 2px solid #dee2e6; padding: 12px;'>)와 셀(<td style='border-bottom: 1px solid #dee2e6; padding: 12px;'>) 디자인을 적용하십시오.
-      - '현재 설정'과 '권장 설정' 열에는 반드시 <pre style='background: #fdfdfe; border: 1px dotted #ccc; padding: 5px; font-family: monospace;'><code> 태그를 사용하여 실제 Apache 설정 조각을 넣으십시오.",
+      - '현재 설정' 열에는 반드시 원본 파일명(예: httpd.conf:L123)을 포함하고, 그 아래에 <pre style='background: #fdfdfe; border: 1px dotted #ccc; padding: 5px; font-family: monospace;'><code> 태그를 사용하여 실제 Apache 설정 조각을 넣으십시오.
+      - '권장 설정' 열에도 동일하게 <pre><code> 태그를 사용하여 실제 개선 코드 조각을 넣으십시오.",
     "recommendations": [
       {
         "category": "점검 분류",
