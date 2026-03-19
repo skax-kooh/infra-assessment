@@ -113,6 +113,7 @@ def generate_prompt(intent: str) -> dict:
   2) 이후 상세 분석 결과 Table (<table>) 추가
   3) '현재 설정' 셀에는 원본 파일명(예: httpd.conf:L10)과 실제 설정 코드 조각(<pre><code>)을 함께 명시
   4) '권장 설정' 셀에도 실제 개선 코드 조각(<pre><code>) 명시
+- **JSON 생성 규칙 (CRITICAL)**: 줄바꿈은 반드시 `\n`으로 이스케이프하고, 절대 줄 끝에 백슬래시(`\`)를 사용하여 줄을 잇지 마십시오.
 - 마크다운 코드블록 없이 순수 JSON만 반환하십시오.""")
 
     human_msg = HumanMessage(content=f"진단 의도: {intent}")

@@ -346,14 +346,26 @@ def analyze_config():
 
         import json
         try:
+            # 1. 일반적인 파싱 시도
             parsed_analysis = json.loads(raw_response)
-        except json.JSONDecodeError as e:
-            logger.error(f"JSON 파싱 오류: {str(e)}\n원본 데이터: {raw_response}")
-            # 파싱 실패 시 원본 데이터를 그대로 html_report에 넣어서 반환하는 폴백 로직
-            parsed_analysis = {
-                "html_report": f"<p>AI 응답을 파싱하는 중 오류가 발생했습니다.</p><pre>{raw_response}</pre>",
-                "recommendations": []
-            }
+        except json.JSONDecodeError:
+            # 2. 파싱 실패 시 전처리 시도 (줄바꿈 이스케이프 누락 등 처리)
+            logger.warning("JSON 기본 파싱 실패. 전처리를 시도합니다.")
+            try:
+                # 줄 끝에 위치한 비표준 백슬래시(\) 제거 (AI가 줄바꿈 표시용으로 쓰는 경우 대비)
+                cleaned_response = re.sub(r'\\\s*\n', '\n', raw_response)
+                # 이스케이프되지 않은 실제 줄바꿈을 \n으로 치환 (단, 필드 구분 등은 유지해야 하므로 주의)
+                # 여기서는 간단하게 \r\n을 \n으로 통일하고, 
+                # JSON 문자열 내부의 실제 줄바꿈은 json.loads가 못 받으므로 strict=False 옵션 사용 고려
+                parsed_analysis = json.loads(cleaned_response, strict=False)
+            except Exception as e2:
+                logger.error(f"전처리 후에도 JSON 파싱 오류: {str(e2)}")
+                logger.error(f"원본 데이터: {raw_response}")
+                # 최종 실패 시 폴백
+                parsed_analysis = {
+                    "html_report": f"<p>AI 응답을 파싱하는 중 오류가 발생했습니다.</p><pre style='white-space: pre-wrap; background: #f8f9fa; padding: 10px;'>{raw_response}</pre>",
+                    "recommendations": []
+                }
         
         return jsonify({
             'analysis': parsed_analysis,
