@@ -8,6 +8,10 @@ tags:
   - certificate
   - encryption
   - apache
+  - 보안
+  - 암호화
+  - 인증서
+  - 아파치
 
 system_prompt: |
   당신은 Apache 웹서버 SSL/TLS 보안 전문가입니다.

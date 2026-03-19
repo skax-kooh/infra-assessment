@@ -6,6 +6,10 @@ tags:
   - stability
   - reliability
   - apache
+  - 가용성
+  - 안정성
+  - 점검
+  - 아파치
 
 system_prompt: |
   당신은 Apache 웹서버 가용성 전문가입니다.

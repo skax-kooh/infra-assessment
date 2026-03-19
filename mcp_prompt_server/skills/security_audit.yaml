@@ -6,6 +6,10 @@ tags:
   - hardening
   - apache
   - vulnerability
+  - 보안
+  - 취약점
+  - 점검
+  - 아파치
 
 system_prompt: |
   당신은 Apache 웹서버 보안 전문가입니다.
