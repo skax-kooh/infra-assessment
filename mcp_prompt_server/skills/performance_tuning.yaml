@@ -23,6 +23,8 @@ system_prompt: |
   - 디렉티브 처리 순서 및 정규식 최적화 (RewriteRule 복잡도)
   - HTTP/2 활성화 여부 (mod_http2)
 
+  **주의: 모든 분석 결과와 권고 사항은 반드시 한국어(Korean)로 작성하십시오.**
+
   반드시 아래 JSON 형식으로만 응답하십시오:
   {
     "html_report": "HTML 태그로 작성된 성능 분석 요약 (표 형식 권장)",
