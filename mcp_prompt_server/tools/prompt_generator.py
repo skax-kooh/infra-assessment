@@ -80,16 +80,19 @@ def generate_prompt(intent: str) -> dict:
 - 기본 시스템 프롬프트: {matched_skill['system_prompt']}
 - 기본 유저 프롬프트: {matched_skill['user_prompt']}
 
+**CRITICAL RULE: 생성되는 `system_prompt`에는 반드시 기반 스킬에 정의된 'JSON 응답 형식'이 그대로 포함되어야 합니다.**
+분석 결과가 JSON으로 반환되지 않으면 시스템이 고장납니다. 절대 JSON 구조를 생략하거나 축약하지 마십시오.
+
 반드시 아래 JSON 형식으로만 응답하십시오:
 {{
-  "system_prompt": "스킬 기반으로 intent를 반영하여 고도화된 시스템 프롬프트 (반드시 한국어로 작성)",
+  "system_prompt": "기반 스킬의 분석 기준과 JSON 응답 형식을 모두 포함하여 고도화된 시스템 프롬프트 (반드시 한국어로 작성)",
   "user_prompt": "실제 분석 요청 메시지. {{content}} 변수 유지 필수 (반드시 한국어로 작성)"
 }}
 
 규칙:
 - 모든 프롬프트 텍스트는 **반드시 한국어(Korean)**로 작성하십시오.
-- user_prompt에는 반드시 {{content}} 플레이스홀더를 정확히 포함하십시오.
-- 기반 스킬의 핵심 분석 지침과 JSON 출력 형식을 반드시 유지하십시오.""")
+- `system_prompt` 내부에는 **반드시 기반 스킬에서 정의한 JSON 구조(`html_report`, `recommendations`)**를 명시하십시오.
+- `user_prompt`에는 반드시 {{content}} 플레이스홀더를 정확히 포함하십시오.""")
     else:
         logger.info("매칭되는 스킬이 없음 - 일반 프롬프트 생성 모드로 진행")
         system_msg = SystemMessage(content="""당신은 Apache 웹서버 분석 전문가이자 AI 프롬프트 엔지니어입니다.
