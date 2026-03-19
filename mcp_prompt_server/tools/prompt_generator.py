@@ -58,11 +58,12 @@ def generate_prompt(intent: str) -> dict:
 
 반드시 아래 JSON 형식으로만 응답하십시오:
 {
-  "system_prompt": "AI 역할과 분석 기준을 정의하는 시스템 프롬프트 (한국어)",
-  "user_prompt": "실제 분석 요청 메시지. 반드시 {content} 변수를 포함할 것 (한국어)"
+  "system_prompt": "AI 역할과 분석 기준을 정의하는 시스템 프롬프트 (반드시 한국어로 작성)",
+  "user_prompt": "실제 분석 요청 메시지. 반드시 {content} 변수를 포함할 것 (반드시 한국어로 작성)"
 }
 
 규칙:
+- 모든 프롬프트 텍스트는 **반드시 한국어(Korean)**로 작성하십시오. 영어로 전환하지 마십시오.
 - user_prompt에는 반드시 {content} 플레이스홀더를 포함하십시오.
 - system_prompt에는 반드시 아래 JSON 응답 형식을 포함하십시오:
   { "html_report": "HTML 태그로 작성된 분석 요약", "recommendations": [...] }
@@ -102,12 +103,14 @@ def improve_prompt(current_prompt: str, feedback: str, prompt_type: str = "syste
 {constraint}
 
 반드시 아래 JSON 형식으로만 응답하십시오:
-{{
-  "improved_prompt": "개선된 프롬프트 전체 텍스트",
-  "changes_summary": "무엇을 어떻게 개선했는지 한 문장 요약"
-}}
+{
+  "improved_prompt": "개선된 프롬프트 전체 텍스트 (반드시 한국어로 작성)",
+  "changes_summary": "무엇을 어떻게 개선했는지 한 문장 요약 (반드시 한국어로 작성)"
+}
 
-마크다운 코드블록 없이 순수 JSON만 반환하십시오.""")
+규칙:
+- 모든 프롬프트 텍스트는 **반드시 한국어(Korean)**로 작성하십시오. 영어로 전환하지 마십시오.
+- 마크다운 코드블록 없이 순수 JSON만 반환하십시오.""")
 
     human_msg = HumanMessage(content=f"현재 프롬프트:\n{current_prompt}\n\n개선 요청:\n{feedback}")
 

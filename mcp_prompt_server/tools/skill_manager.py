@@ -143,10 +143,11 @@ def generate_prompt_with_skill(intent: str, skill_name: str) -> dict[str, Any]:
     if "error" in skill:
         return skill
 
-    # intent를 user_prompt 하단에 추가 지시사항으로 부착
+    # intent를 user_prompt 하단에 추가 지시사항으로 부착 (한국어 고정 지침 포함)
     augmented_user_prompt = (
         f"{skill['user_prompt'].rstrip()}\n\n"
-        f"[추가 분석 요청]\n{intent}"
+        f"[추가 분석 요청]\n{intent}\n\n"
+        f"**주의: 모든 분석 결과와 권고 사항은 반드시 한국어(Korean)로 작성하십시오.**"
     )
 
     logger.info(f"generate_prompt_with_skill - skill: {skill_name}, intent: {intent}")
