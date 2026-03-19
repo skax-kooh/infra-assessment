@@ -48,11 +48,51 @@ def generate_prompt(intent: str) -> dict:
     Args:
         intent: 진단하고 싶은 내용 (예: "가용성 중심 점검", "보안 취약점 분석")
     """
+    from mcp_prompt_server.tools.skill_manager import _load_all_skills
     logger.info(f"generate_prompt 호출 - intent: {intent}")
+
+    # 1. 스킬 매칭 시도
+    matched_skill = None
+    matched_tags = []
+    all_skills = _load_all_skills()
+
+    for skill in all_skills:
+        # 태그 중 하나라도 intent에 포함되어 있는지 확인
+        current_matched = [tag for tag in skill.get('tags', []) if tag in intent]
+        if current_matched:
+            # 가장 많이 매칭된 스킬을 선택 (또는 첫 번째)
+            if not matched_skill or len(current_matched) > len(matched_tags):
+                matched_skill = skill
+                matched_tags = current_matched
 
     llm = _get_llm()
 
-    system_msg = SystemMessage(content="""당신은 Apache 웹서버 분석 전문가이자 AI 프롬프트 엔지니어입니다.
+    if matched_skill:
+        logger.info(f"스킬 매칭 성공: [{matched_skill['name']}] (매칭된 키워드: {matched_tags})")
+        
+        # 매칭된 스킬 템플릿을 기반으로 LLM이 의도(intent)를 반영하여 프롬프트 완성
+        system_msg = SystemMessage(content=f"""당신은 Apache 웹서버 분석 전문가이자 AI 프롬프트 엔지니어입니다.
+주어진 스킬(Skill) 템플릿을 기반으로 사용자의 구체적인 진단 의도(intent)를 반영한 최종 프롬프트를 생성하십시오.
+
+[기반 스킬 정보]
+- 이름: {matched_skill['display_name']}
+- 설명: {matched_skill['description']}
+- 기본 시스템 프롬프트: {matched_skill['system_prompt']}
+- 기본 유저 프롬프트: {matched_skill['user_prompt']}
+
+반드시 아래 JSON 형식으로만 응답하십시오:
+{{
+  "system_prompt": "스킬 기반으로 intent를 반영하여 고도화된 시스템 프롬프트 (반드시 한국어로 작성)",
+  "user_prompt": "실제 분석 요청 메시지. {{content}} 변수 유지 필수 (반드시 한국어로 작성)"
+}}
+
+규칙:
+- 모든 프롬프트 텍스트는 **반드시 한국어(Korean)**로 작성하십시오.
+- user_prompt에는 반드시 {{content}} 플레이스홀더를 정확히 포함하십시오.
+- 기반 스킬의 핵심 분석 지침과 JSON 출력 형식을 반드시 유지하십시오.""")
+    else:
+        logger.info("매칭되는 스킬이 없음 - 일반 프롬프트 생성 모드로 진행")
+        system_msg = SystemMessage(content="""당신은 Apache 웹서버 분석 전문가이자 AI 프롬프트 엔지니어입니다.
 사용자의 진단 의도를 받아, Apache httpd.conf 설정 파일 분석에 최적화된
 시스템 프롬프트와 유저 프롬프트를 생성하십시오.
 

@@ -12,15 +12,14 @@ from fastmcp import FastMCP
 from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
 
+logger = logging.getLogger(__name__)
+
 from mcp_prompt_server.tools.prompt_generator import generate_prompt, improve_prompt
 from mcp_prompt_server.tools.skill_manager import (
     list_skills,
     get_skill,
     generate_prompt_with_skill,
 )
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 
 def create_app():
