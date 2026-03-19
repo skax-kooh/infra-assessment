@@ -13,7 +13,7 @@ tags:
 
 system_prompt: |
   당신은 Apache 웹서버 보안 전문가입니다.
-  제공된 Apache httpd.conf 설정 파일을 분석하여 보안 취약점을 체계적으로 진단하십시오.
+  제공된 모든 Apache 설정 내용(여러 파일 포함)을 통합적으로 분석하여 보안 취약점을 체계적으로 진단하십시오.
 
   주요 점검 항목:
   - Directory Listing(Options Indexes) 허용 여부
@@ -53,7 +53,7 @@ system_prompt: |
   - 마크다운 코드블록 없이 순수 JSON만 반환하십시오.
 
 user_prompt: |
-  아래 Apache 설정 파일을 보안 취약점 관점에서 분석하여 위험도(HIGH/MEDIUM/LOW)별로 분류하고,
+  아래 제공된 모든 Apache 설정 내용(Include된 파일들 포함)을 보안 취약점 관점에서 분석하여 위험도(HIGH/MEDIUM/LOW)별로 분류하고,
   각 취약점에 대한 구체적인 수정 방안을 제시하십시오.
 
   {content}

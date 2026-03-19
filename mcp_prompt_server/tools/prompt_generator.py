@@ -96,7 +96,7 @@ def generate_prompt(intent: str) -> dict:
     else:
         logger.info("매칭되는 스킬이 없음 - 일반 프롬프트 생성 모드로 진행")
         system_msg = SystemMessage(content="""당신은 Apache 웹서버 분석 전문가이자 AI 프롬프트 엔지니어입니다.
-사용자의 진단 의도를 받아, Apache httpd.conf 설정 파일 분석에 최적화된
+사용자의 진단 의도를 받아, 제공된 모든 Apache 설정 내용(여러 파일 포함) 분석에 최적화된
 시스템 프롬프트와 유저 프롬프트를 생성하십시오.
 
 반드시 아래 JSON 형식으로만 응답하십시오:
