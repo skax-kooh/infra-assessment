@@ -50,7 +50,7 @@ export function displayScanResults(results) {
     aiHtml += `
         <div class="card" style="margin-bottom: 20px;">
             <h3 style="margin-top: 0; color: #333;">AI 진단</h3>
-            <p style="color: #666; margin-bottom: 15px;">조회된 모든 서버의 설정 파일들을 AI가 종합적으로 분석합니다.</p>
+            <p style="color: #666; margin-bottom: 15px;">조회된 모든 서버의 설정 항목들을 AI가 생성한 프롬프트로 분석합니다.</p>
             <button class="btn-primary"
                 id="analyze-all-servers-btn"
                 onclick="analyzeAllServers()"
@@ -137,21 +137,7 @@ export function displayScanResults(results) {
                 </details>
             `;
 
-            if (item.configs && item.configs.length > 0) {
-                configHtml += `
-                    <div style="margin-top: 20px; border-top: 1px dashed #ccc; padding-top: 20px;">
-                        <button class="btn-secondary"
-                            onclick="analyzeAllConfigs(this, ${index})"
-                            style="width: 100%; padding: 10px; margin-bottom: 10px; background: #6c757d; color: white; border: none; border-radius: 4px;">
-                            이 서버만 AI 진단 수행 (${item.ip})
-                        </button>
-                        <div id="global-analysis-${index}" style="display: none; background: #f3f0ff; padding: 20px; border-radius: 8px; border: 1px solid #d0bfff; margin-bottom: 20px;">
-                            <h4 style="color: #6f42c1; margin-top: 0;">개별 서버 진단 결과 (${item.ip})</h4>
-                            <div class="analysis-content" style="font-family: sans-serif; font-size: 14px; line-height: 1.6; color: #333;"></div>
-                        </div>
-                    </div>
-                `;
-            }
+
         } else {
             configHtml += `<p style="color: red;">오류: ${item.message}</p>`;
         }

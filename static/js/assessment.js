@@ -17,8 +17,8 @@ export function attachAssessmentListeners() {
 
     // 초기 화면: 서버 목록이 비어있으면 기본값으로 추가
     if (serverList && serverList.children.length === 0 && template) {
-        addServerTile('192.9.5.19', 'webwas', 'dlatl!00');
         addServerTile('192.9.133.56', 'webwas', 'dlatl!00');
+        addServerTile('192.9.5.19', 'webwas', 'dlatl!00');
     }
 
     // [서버 추가] 버튼

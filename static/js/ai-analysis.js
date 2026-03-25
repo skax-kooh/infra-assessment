@@ -232,34 +232,6 @@ export function performAiAnalysis(configs, resultDiv, outputElement) {
 }
 
 /**
- * 개별 서버 AI 진단
- * @param {HTMLElement} button - 클릭된 버튼 요소
- * @param {number} index - 서버 인덱스
- */
-export function analyzeAllConfigs(button, index) {
-    const resultDiv = document.getElementById(`global-analysis-${index}`);
-    const analysisContentPre = resultDiv.querySelector('.analysis-content');
-
-    const card = button.closest('.result-card');
-    const configPanes = card.querySelectorAll('.config-content-pane');
-
-    const configs = [];
-    configPanes.forEach(pane => {
-        const path = pane.getAttribute('data-path');
-        const serverIp = pane.getAttribute('data-server-ip') || 'Unknown IP';
-        const content = decodeURIComponent(pane.querySelector('.config-raw-content').textContent);
-        configs.push({ path: `[${serverIp}] ${path}`, content });
-    });
-
-    if (configs.length === 0) {
-        alert('분석할 설정 파일이 없습니다.');
-        return;
-    }
-
-    performAiAnalysis(configs, resultDiv, analysisContentPre);
-}
-
-/**
  * 모든 서버 통합 AI 진단
  */
 export function analyzeAllServers() {
