@@ -259,48 +259,16 @@ def analyze_config():
         # 시스템 프롬프트: AI의 역할 정의
         system_prompt = data.get('system_prompt', config.get('azure_openai_system_prompt'))
         if not system_prompt:
-             # 기본값 (한글)
-             system_prompt = """당신은 전문 아파치 웹서버 관리자입니다.
-제공된 아파치 설정 파일을 다음 기준에 따라 분석하십시오:
-1. 성능 최적화 기회 (예: KeepAlive 설정, MPM 튜닝 등)
-2. 가용성 구성
-3. 모범 사례 위반
-
-**중요: 분석 결과는 반드시 아래 구조를 가진 유효한 JSON 형식으로 반환하십시오.**
-
-{
-  "html_report": "여기에 전체 분석 결과 요약을 HTML 태그 (h3, ul, li 등)로 작성하십시오. 마크다운을 섞지 마십시오.",
-  "score_items": [
-    {
-      "name": "점검 항목명 (예: KeepAlive 활성화)",
-      "passed": true,
-      "reason": "해당 항목이 올바르게 설정되어 있는지 또는 미설정/잘못 설정된 이유"
-    }
-  ],
-  "recommendations": [
-    {
-      "path": "/etc/httpd/conf/httpd.conf",
-      "type": "modify",
-      "original_match": "수정/삭제 대상이 되는 원본 설정 파일의 정확한 한글자도 틀리지 않은 텍스트 조각 (추가일 경우 삽입 위치 바로 위 텍스트)",
-      "new_content": "새로 들어가야 할 코드 내용 (삭제일 경우 빈 문자열)",
-      "reason": "왜 이렇게 수정하는지에 대한 이유 설명"
-    }
-  ]
-}
-
-* score_items 배열에는 분석한 모든 점검 항목을 나열하십시오. passed가 true이면 +1점, false이면 0점으로 계산됩니다.
-* 점검 항목은 성능, 보안, 가용성, 모범 사례 등 다양한 카테고리에서 최소 5개 이상 도출하십시오.
-* 모든 요약/설명은 한국어(Korean)로 작성하십시오.
-* 개별 파일의 전체 내용을 다시 반환하지 마십시오. 오직 '변경이 필요한 부분'만 recommendations 배열에 나열하십시오."""
+            # 기본값
+            system_prompt = """당신은 Apache 웹서버 전문가입니다. 제공된 설정 파일을 성능, 가용성, 보안, 모범 사례 관점에서 분석하십시오.
+반드시 아래 JSON 형식으로만 응답하십시오 (마크다운 코드블록 없이):
+{"html_report":"<h3>진단 결과</h3><ul>항목별 분석(한국어)</ul>","score_items":[{"name":"항목명","passed":true,"reason":"이유"}],"recommendations":[{"path":"파일경로","type":"modify","original_match":"원본 텍스트","new_content":"권장 내용","reason":"이유"}]}
+모든 설명은 한국어로 작성. 파일 전체 내용 반환 금지."""
 
         # 사용자 프롬프트: 실제 질문 내용
         user_prompt_template = data.get('user_prompt', config.get('azure_openai_user_prompt'))
         if not user_prompt_template:
-            # 기본값 (한글)
-            user_prompt_template = """다음 아파치 설정 파일들을 **한국어로** 상세히 분석해 주시고, 반드시 JSON 형식으로 응답해 주세요.
-
-통합 설정 내용:
-{content}"""
+            user_prompt_template = "아래 Apache 설정을 분석하고 JSON으로 응답하십시오.\n\n{content}"
 
         # {content} 부분을 실제 설정 파일 내용으로 바꿔치기
         # 대소문자나 공백이 섞였을 경우를 대비해 정규식 치환 시도
@@ -314,31 +282,10 @@ def analyze_config():
             user_prompt = f"{user_prompt_template}\n\n[분석 대상 설정 내용]:\n{combined_content}"
             logger.warning("프롬프트 템플릿에서 {content}를 찾을 수 없어 하단에 강제 결합했습니다.")
 
-        # ── score_items 지시문 강제 주입 ──────────────────────────────
-        # 어떤 프롬프트 소스(디폴트/MCP/사용자 입력)에서 오더라도 항상 추가
-        SCORE_INJECTION = """
-
----
-[필수 응답 형식 - score_items]
-반드시 JSON 응답에 아래 형식의 "score_items" 배열을 포함하십시오.
-각 항목은 설정 파일에서 점검한 개별 체크포인트를 나타냅니다.
-
-"score_items": [
-  {
-    "name": "점검 항목명 (예: KeepAlive 활성화)",
-    "passed": true,
-    "reason": "올바르게 설정된 이유 또는 미설정/잘못 설정된 이유"
-  }
-]
-
-규칙:
-- passed=true: 해당 항목이 올바르게 설정됨 (+1점)
-- passed=false: 미설정이거나 잘못 설정됨 (0점)
-- 점검 항목은 최소 10개 이상 도출하십시오.
-- 최종 점수는 시스템이 자동 계산합니다. (합산 점수 / 전체 항목 수 × 100)
-"""
+        # score_items 지시문 강제 주입 (응답에 반드시 포함되도록)
+        SCORE_INJECTION = "\n[필수] JSON에 score_items 배열 포함: [{\"name\":\"항목명\",\"passed\":true,\"reason\":\"이유\"}]. passed=true(+1점)/false(0점). 최소 5개 이상."
         system_prompt = system_prompt + SCORE_INJECTION
-        logger.info("score_items 지시문이 시스템 프롬프트에 주입되었습니다.")
+        logger.info("score_items 지시문 주입 완료")
 
         # 로깅 (프리뷰 및 전체 프롬프트 기록)
         logger.info(f"--- AI 분석 요청 시작 ---")
