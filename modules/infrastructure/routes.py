@@ -314,6 +314,32 @@ def analyze_config():
             user_prompt = f"{user_prompt_template}\n\n[분석 대상 설정 내용]:\n{combined_content}"
             logger.warning("프롬프트 템플릿에서 {content}를 찾을 수 없어 하단에 강제 결합했습니다.")
 
+        # ── score_items 지시문 강제 주입 ──────────────────────────────
+        # 어떤 프롬프트 소스(디폴트/MCP/사용자 입력)에서 오더라도 항상 추가
+        SCORE_INJECTION = """
+
+---
+[필수 응답 형식 - score_items]
+반드시 JSON 응답에 아래 형식의 "score_items" 배열을 포함하십시오.
+각 항목은 설정 파일에서 점검한 개별 체크포인트를 나타냅니다.
+
+"score_items": [
+  {
+    "name": "점검 항목명 (예: KeepAlive 활성화)",
+    "passed": true,
+    "reason": "올바르게 설정된 이유 또는 미설정/잘못 설정된 이유"
+  }
+]
+
+규칙:
+- passed=true: 해당 항목이 올바르게 설정됨 (+1점)
+- passed=false: 미설정이거나 잘못 설정됨 (0점)
+- 성능, 보안, 가용성, 모범 사례 등 다양한 카테고리에서 최소 5개 이상 도출하십시오.
+- 최종 점수는 시스템이 자동 계산합니다. (합산 점수 / 전체 항목 수 × 100)
+"""
+        system_prompt = system_prompt + SCORE_INJECTION
+        logger.info("score_items 지시문이 시스템 프롬프트에 주입되었습니다.")
+
         # 로깅 (프리뷰 및 전체 프롬프트 기록)
         logger.info(f"--- AI 분석 요청 시작 ---")
         logger.info(f"System Prompt:\n{system_prompt}")
