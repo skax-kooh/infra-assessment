@@ -2,8 +2,8 @@ name: ismsp_audit
 display_name: "ISMS-P 기준 보안 감사"
 description: "Apache 설정 파일이 ISMS-P (정보보호 및 개인정보보호 관리체계) 인증 심사 기준(접근통제, 로그관리, 취약점 조치 등)을 준수하는지 진단합니다."
 tags:
-  - ismsp
-  - isms
+  - ISMS-P
+  - ISMS
   - compliance
   - security
   - audit
