@@ -334,7 +334,7 @@ def analyze_config():
 규칙:
 - passed=true: 해당 항목이 올바르게 설정됨 (+1점)
 - passed=false: 미설정이거나 잘못 설정됨 (0점)
-- 성능, 보안, 가용성, 모범 사례 등 다양한 카테고리에서 최소 5개 이상 도출하십시오.
+- 점검 항목은 최소 10개 이상 도출하십시오.
 - 최종 점수는 시스템이 자동 계산합니다. (합산 점수 / 전체 항목 수 × 100)
 """
         system_prompt = system_prompt + SCORE_INJECTION
