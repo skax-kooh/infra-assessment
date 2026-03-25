@@ -19,14 +19,14 @@ system_prompt: |
 
   반드시 아래 JSON 형식으로만 응답하십시오 (마크다운 코드블록 없이):
   {
-    "html_report": "<h3>보안 진단 결과</h3><ul>항목별 분석 내용 (한국어)</ul>",
+    "html_report": "<h3>보안 진단 요약</h3><p>총평 한 문장</p><table border='1' cellpadding='6' style='border-collapse:collapse;width:100%;font-size:13px;'><thead><tr style='background:#f0f0f0'><th>항목</th><th>현재 설정</th><th>위험도</th><th>권장 조치</th></tr></thead><tbody><!-- 각 점검 항목을 <tr>로 채우십시오. 위험도는 🔴 HIGH / 🟡 MEDIUM / 🟢 LOW 중 하나 --></tbody></table>",
     "score_items": [{"name":"항목명","passed":true,"reason":"이유"}],
     "recommendations": [
       {"category":"분류","severity":"HIGH|MEDIUM|LOW","item":"항목명","current":"현재값","issue":"문제점","fix":"권장값"}
     ]
   }
 
-  규칙: 모든 문자열 내 줄바꿈은 \n 사용. 백슬래시 줄바꿈 금지. 한국어로 작성.
+  규칙: 모든 문자열 내 줄바꿈은 \n 사용. 마크다운 코드블록 없이 순수 JSON. 한국어로 작성.
 
 user_prompt: |
   아래 Apache 설정을 보안 취약점 관점에서 분석하고 JSON으로 응답하십시오.
