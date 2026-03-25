@@ -262,7 +262,7 @@ def analyze_config():
             # 기본값
             system_prompt = """당신은 Apache 웹서버 전문가입니다. 제공된 설정 파일을 성능, 가용성, 보안, 모범 사례 관점에서 분석하십시오.
 반드시 아래 JSON 형식으로만 응답하십시오 (마크다운 코드블록 없이):
-{"html_report":"<h3>진단 요약</h3><p>총평 한 문장</p><table border='1' cellpadding='6' style='border-collapse:collapse;width:100%;font-size:13px;'><thead><tr style='background:#f0f0f0'><th>항목</th><th>현재 설정</th><th>상태</th><th>권장 조치</th></tr></thead><tbody><!-- 점검 항목을 <tr>로 채우십시오. 상태: ✅ 양호 / ⚠️ 개선필요 / ❌ 위험 --></tbody></table>","score_items":[{"name":"항목명","passed":true,"reason":"이유"}],"recommendations":[{"path":"파일경로","type":"modify","original_match":"원본 텍스트","new_content":"권장 내용","reason":"이유"}]}
+{"html_report":"<h3>진단 요약</h3><p>세 문장 이내로 총평 작성</p><table border='1' cellpadding='6' style='border-collapse:collapse;width:100%;font-size:13px;'><thead><tr style='background:#f0f0f0'><th>항목</th><th>상태</th><th>현재 설정</th><th>권고 설정</th></tr></thead><tbody><!-- 점검 항목을 <tr>로 채우십시오. 상태: ✅ 양호 / ⚠️ 개선필요 / ❌ 위험. 권고 설정 열에는 실제 Apache 설정 코드 예시를 <code> 태그로 포함하십시오 --></tbody></table>","score_items":[{"name":"항목명","passed":true,"reason":"이유"}],"recommendations":[{"path":"파일경로","type":"modify","original_match":"원본 텍스트","new_content":"권장 내용","reason":"이유"}]}
 모든 설명은 한국어로 작성. 파일 전체 내용 반환 금지."""
 
         # 사용자 프롬프트: 실제 질문 내용
