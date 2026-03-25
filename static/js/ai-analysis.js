@@ -150,31 +150,73 @@ export function performAiAnalysis(configs, resultDiv, outputElement) {
             const analysisData = data.analysis;
             let reportHtml = analysisData.html_report || '';
 
-            // 토큰 사용량 + 수행 시간 뱃지
             const elapsed = data.elapsed_seconds != null ? `${data.elapsed_seconds}s` : '-';
+
+            // ── 점수 계산 ──────────────────────────────────────────
+            let scoreBadgeHtml = '';
+            const scoreItems = analysisData.score_items;
+            if (Array.isArray(scoreItems) && scoreItems.length > 0) {
+                const passedCount = scoreItems.filter(item => item.passed === true).length;
+                const totalCount = scoreItems.length;
+                const scorePercent = Math.round((passedCount / totalCount) * 100);
+
+                // 점수에 따른 색상 결정
+                let scoreColor, scoreBg, scoreLabel;
+                if (scorePercent >= 80) {
+                    scoreColor = '#155724'; scoreBg = '#d4edda'; scoreLabel = '양호';
+                } else if (scorePercent >= 50) {
+                    scoreColor = '#856404'; scoreBg = '#fff3cd'; scoreLabel = '보통';
+                } else {
+                    scoreColor = '#721c24'; scoreBg = '#f8d7da'; scoreLabel = '위험';
+                }
+
+                scoreBadgeHtml = `
+                    <span style="display:inline-flex; align-items:center; gap:6px; font-size:13px;
+                        background:${scoreBg}; color:${scoreColor}; font-weight:700;
+                        padding:5px 12px; border-radius:20px; border:1px solid ${scoreColor}33;">
+                        📊 진단 점수: ${scorePercent}점
+                        <span style="font-size:11px; font-weight:400;">(${passedCount}/${totalCount}) ${scoreLabel}</span>
+                    </span>
+                `;
+            }
+
+            // ── 수행 시간 뱃지 ────────────────────────────────────
+            const elapsedBadgeHtml = `
+                <span style="display:inline-flex; align-items:center; font-size:11px;
+                    background:#e9ecef; color:#495057; font-weight:500;
+                    padding:5px 10px; border-radius:20px;">
+                    ⏱ ${elapsed}
+                </span>
+            `;
+
+            // 토큰 정보 (있으면 추가)
+            let tokenInfoHtml = '';
             if (data.usage) {
                 const total = data.usage.total_tokens || 0;
                 const prompt = data.usage.input_tokens || 0;
                 const completion = data.usage.output_tokens || 0;
-                const tokenBadge = `
-                    <div style="float: right; font-size: 11px; background: #e9ecef; padding: 4px 8px; border-radius: 12px; color: #495057; font-weight: 500; margin-bottom: 10px;">
-                        ⏱ ${elapsed}&nbsp;&nbsp;|&nbsp;&nbsp;Tokens: <strong>${total.toLocaleString()}</strong>
-                        (Input: ${prompt.toLocaleString()}, Output: ${completion.toLocaleString()})
-                    </div>
-                    <div style="clear: both;"></div>
+                tokenInfoHtml = `
+                    <span style="font-size:11px; color:#6c757d;">
+                        Tokens: <strong>${total.toLocaleString()}</strong>
+                        (In: ${prompt.toLocaleString()}, Out: ${completion.toLocaleString()})
+                    </span>
                 `;
-                reportHtml = reportHtml.replace(/```html\n?/ig, '').replace(/```\n?/g, '').trim();
-                outputElement.innerHTML = tokenBadge + reportHtml;
-            } else {
-                const timeBadge = `
-                    <div style="float: right; font-size: 11px; background: #e9ecef; padding: 4px 8px; border-radius: 12px; color: #495057; font-weight: 500; margin-bottom: 10px;">
-                        ⏱ ${elapsed}
-                    </div>
-                    <div style="clear: both;"></div>
-                `;
-                reportHtml = reportHtml.replace(/```html\n?/ig, '').replace(/```\n?/g, '').trim();
-                outputElement.innerHTML = timeBadge + reportHtml;
             }
+
+            const metaBarHtml = `
+                <div style="display:flex; justify-content:space-between; align-items:center;
+                    flex-wrap:wrap; gap:8px; margin-bottom:14px; padding-bottom:12px;
+                    border-bottom:1px solid #dee2e6;">
+                    <div>${scoreBadgeHtml}</div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        ${tokenInfoHtml}
+                        ${elapsedBadgeHtml}
+                    </div>
+                </div>
+            `;
+
+            reportHtml = reportHtml.replace(/```html\n?/ig, '').replace(/```\n?/g, '').trim();
+            outputElement.innerHTML = metaBarHtml + reportHtml;
             outputElement.style.color = '#333';
 
             // AI 개선안 인라인 렌더링

@@ -270,10 +270,17 @@ def analyze_config():
 
 {
   "html_report": "여기에 전체 분석 결과 요약을 HTML 태그 (h3, ul, li 등)로 작성하십시오. 마크다운을 섞지 마십시오.",
+  "score_items": [
+    {
+      "name": "점검 항목명 (예: KeepAlive 활성화)",
+      "passed": true,
+      "reason": "해당 항목이 올바르게 설정되어 있는지 또는 미설정/잘못 설정된 이유"
+    }
+  ],
   "recommendations": [
     {
       "path": "/etc/httpd/conf/httpd.conf",
-      "type": "modify", /* "add", "modify", "delete" 중 하나 */
+      "type": "modify",
       "original_match": "수정/삭제 대상이 되는 원본 설정 파일의 정확한 한글자도 틀리지 않은 텍스트 조각 (추가일 경우 삽입 위치 바로 위 텍스트)",
       "new_content": "새로 들어가야 할 코드 내용 (삭제일 경우 빈 문자열)",
       "reason": "왜 이렇게 수정하는지에 대한 이유 설명"
@@ -281,6 +288,8 @@ def analyze_config():
   ]
 }
 
+* score_items 배열에는 분석한 모든 점검 항목을 나열하십시오. passed가 true이면 +1점, false이면 0점으로 계산됩니다.
+* 점검 항목은 성능, 보안, 가용성, 모범 사례 등 다양한 카테고리에서 최소 5개 이상 도출하십시오.
 * 모든 요약/설명은 한국어(Korean)로 작성하십시오.
 * 개별 파일의 전체 내용을 다시 반환하지 마십시오. 오직 '변경이 필요한 부분'만 recommendations 배열에 나열하십시오."""
 
