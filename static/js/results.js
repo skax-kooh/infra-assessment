@@ -24,23 +24,31 @@ export function showConfigContent(element, contentId) {
 
 /**
  * 서버 스캔 결과를 HTML로 렌더링합니다.
+ * - 서버별 설정파일 타일은 '진단 대상 서버' 카드 내부(#config-results-container)에 렌더링
+ * - AI 진단 타일은 'AI Prompt Settings' 카드 아래(#ai-diagnosis-container)에 렌더링
  * @param {Array} results - 백엔드에서 받은 스캔 결과 배열
  */
 export function displayScanResults(results) {
-    const resultContainer = document.getElementById('scan-results');
-    const tableContainer = document.getElementById('results-table-container');
+    // 서버별 설정파일 컨테이너 (진단 대상 서버 카드 내부)
+    const configResultsContainer = document.getElementById('config-results-container');
+    const configTableContainer = document.getElementById('config-results-table-container');
+
+    // AI 진단 컨테이너 (AI Prompt Settings 카드 아래)
+    const aiDiagnosisContainer = document.getElementById('ai-diagnosis-container');
+    const aiDiagnosisTableContainer = document.getElementById('ai-diagnosis-table-container');
 
     if (!results || results.length === 0) {
-        tableContainer.innerHTML = '<p>결과가 없습니다.</p>';
-        resultContainer.style.display = 'block';
+        if (configTableContainer) configTableContainer.innerHTML = '<p>결과가 없습니다.</p>';
+        if (configResultsContainer) configResultsContainer.style.display = 'block';
         return;
     }
 
-    let html = '';
+    let configHtml = '';
+    let aiHtml = '';
 
-    // 전체 서버 통합 AI 진단 버튼
-    html += `
-        <div style="margin-bottom: 30px; padding: 20px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px;">
+    // AI 진단 타일 (전체 서버 통합)
+    aiHtml += `
+        <div class="card" style="margin-bottom: 20px;">
             <h3 style="margin-top: 0; color: #333;">AI 진단</h3>
             <p style="color: #666; margin-bottom: 15px;">조회된 모든 서버의 설정 파일들을 AI가 종합적으로 분석합니다.</p>
             <button class="btn-primary"
@@ -56,11 +64,12 @@ export function displayScanResults(results) {
         </div>
     `;
 
+    // 서버별 설정파일 타일 + 개별 AI 진단 버튼
     results.forEach((item, index) => {
         const statusColor = item.status === 'success' ? 'green' : 'red';
         const statusText = item.status === 'success' ? '성공' : '실패';
 
-        html += `
+        configHtml += `
             <div class="result-card" style="border: 1px solid #ddd; margin-bottom: 20px; border-radius: 8px; overflow: hidden;" data-server-ip="${item.ip}">
                 <div style="background: #f2f2f2; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
                     <strong>${item.ip}</strong>
@@ -70,7 +79,7 @@ export function displayScanResults(results) {
         `;
 
         if (item.status === 'success') {
-            html += `
+            configHtml += `
                 <p><strong>메인 설정파일:</strong> ${item.main_config_file} (루트: ${item.server_root})</p>
                 <p><strong>발견된 파일 수:</strong> ${item.config_count}</p>
 
@@ -85,7 +94,7 @@ export function displayScanResults(results) {
 
             if (item.configs && item.configs.length > 0) {
                 item.configs.forEach((config, idx) => {
-                    html += `
+                    configHtml += `
                         <li style="padding: 8px; cursor: pointer; border-bottom: 1px solid #eee;"
                             onclick="showConfigContent(this, 'content-${index}-${idx}')"
                             class="${idx === 0 ? 'active-file' : ''}">
@@ -96,7 +105,7 @@ export function displayScanResults(results) {
                 });
             }
 
-            html += `
+            configHtml += `
                             </ul>
                         </div>
                         <div class="file-content" style="width: 70%; overflow-y: auto; padding: 10px; background: #f9f9f9;">
@@ -110,7 +119,7 @@ export function displayScanResults(results) {
                         .replace(/</g, "&lt;")
                         .replace(/>/g, "&gt;");
 
-                    html += `
+                    configHtml += `
                         <div id="content-${index}-${idx}" class="config-content-pane" style="${style}" data-path="${config.path}" data-server-ip="${item.ip}">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                                 <h4 style="margin: 0;">${config.path}</h4>
@@ -122,14 +131,14 @@ export function displayScanResults(results) {
                 });
             }
 
-            html += `
+            configHtml += `
                         </div>
                     </div>
                 </details>
             `;
 
             if (item.configs && item.configs.length > 0) {
-                html += `
+                configHtml += `
                     <div style="margin-top: 20px; border-top: 1px dashed #ccc; padding-top: 20px;">
                         <button class="btn-secondary"
                             onclick="analyzeAllConfigs(this, ${index})"
@@ -144,15 +153,20 @@ export function displayScanResults(results) {
                 `;
             }
         } else {
-            html += `<p style="color: red;">오류: ${item.message}</p>`;
+            configHtml += `<p style="color: red;">오류: ${item.message}</p>`;
         }
 
-        html += `
+        configHtml += `
                 </div>
             </div>
         `;
     });
 
-    tableContainer.innerHTML = html;
-    resultContainer.style.display = 'block';
+    // 서버별 설정파일 타일 → 진단 대상 서버 카드 내부에 렌더링
+    if (configTableContainer) configTableContainer.innerHTML = configHtml;
+    if (configResultsContainer) configResultsContainer.style.display = 'block';
+
+    // AI 진단 타일 → AI Prompt Settings 카드 아래에 렌더링
+    if (aiDiagnosisTableContainer) aiDiagnosisTableContainer.innerHTML = aiHtml;
+    if (aiDiagnosisContainer) aiDiagnosisContainer.style.display = 'block';
 }

@@ -1,6 +1,8 @@
 <h2>웹서버 진단</h2>
 <div class="assessment-content">
-    <div class="card">
+
+    <!-- ① 진단 대상 서버 카드 -->
+    <div class="card" style="margin-bottom: 20px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h3>진단 대상 서버</h3>
             <button id="add-server-btn" class="btn-secondary">+ 서버 추가</button>
@@ -10,12 +12,22 @@
             <!-- Server tiles will be added here by JS -->
         </div>
 
-        <div id="server-list">
-            <!-- Server tiles will be added here by JS -->
-        </div>
+        <button id="start-check-btn" type="button" class="btn-primary" style="margin-top: 20px; width: 100%;">설정
+            조회</button>
 
-        <details style="margin-top: 20px; border: 1px solid #ddd; border-radius: 4px; padding: 10px;">
-            <summary style="cursor: pointer; font-weight: bold; color: #555;">AI Prompt Settings (AI 프롬프트 설정)
+        <div id="scan-status" style="margin-top: 15px; padding: 10px; border-radius: 4px; display: none;"></div>
+
+        <!-- 설정 조회 결과: 서버별 설정파일 타일이 이 안에 생성됩니다 -->
+        <div id="config-results-container" style="margin-top: 20px; display: none;">
+            <h3 style="margin-bottom: 15px;">서버별 설정 파일</h3>
+            <div id="config-results-table-container"></div>
+        </div>
+    </div>
+
+    <!-- ② AI Prompt Settings 카드 (진단 대상 서버 카드와 동일 레벨) -->
+    <div class="card" style="margin-bottom: 20px;">
+        <details style="border: none; padding: 0;">
+            <summary style="cursor: pointer; font-weight: bold; color: #555; font-size: 1.05em;">AI Prompt Settings (AI 프롬프트 설정)
             </summary>
             <div style="margin-top: 15px;">
 
@@ -96,44 +108,40 @@
 
             </div>
         </details>
-
-        <button id="start-check-btn" type="button" class="btn-primary" style="margin-top: 20px; width: 100%;">설정
-            조회</button>
-
-        <div id="scan-status" style="margin-top: 15px; padding: 10px; border-radius: 4px; display: none;"></div>
     </div>
 
-    <!-- Template for Server Tile -->
-    <template id="server-tile-template">
-        <div class="server-tile card"
-            style="margin-bottom: 15px; padding: 15px; background: #f9f9f9; border: 1px solid #eee;">
-            <div style="display: flex; justify-content: flex-end;">
-                <button type="button" class="remove-server-btn"
-                    style="background: none; border: none; color: #ff4444; cursor: pointer;">✕ 삭제</button>
+    <!-- ③ AI 진단 타일: 설정 조회 후 이 안에 생성됩니다 -->
+    <div id="ai-diagnosis-container" style="display: none;">
+        <div id="ai-diagnosis-table-container"></div>
+    </div>
+
+</div>
+
+<!-- Template for Server Tile -->
+<template id="server-tile-template">
+    <div class="server-tile card"
+        style="margin-bottom: 15px; padding: 15px; background: #f9f9f9; border: 1px solid #eee;">
+        <div style="display: flex; justify-content: flex-end;">
+            <button type="button" class="remove-server-btn"
+                style="background: none; border: none; color: #ff4444; cursor: pointer;">✕ 삭제</button>
+        </div>
+        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px;">
+            <div class="form-group">
+                <label>Server IP</label>
+                <input type="text" class="server-ip" placeholder="Server IP" style="width: 100%; padding: 8px;">
             </div>
-            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px;">
-                <div class="form-group">
-                    <label>Server IP</label>
-                    <input type="text" class="server-ip" placeholder="Server IP" style="width: 100%; padding: 8px;">
-                </div>
-                <div class="form-group">
-                    <label>Username</label>
-                    <input type="text" class="server-user" placeholder="root" style="width: 100%; padding: 8px;">
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" class="server-pass" placeholder="Password"
-                        style="width: 100%; padding: 8px;">
-                </div>
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" class="server-user" placeholder="root" style="width: 100%; padding: 8px;">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" class="server-pass" placeholder="Password"
+                    style="width: 100%; padding: 8px;">
             </div>
         </div>
-    </template>
-
-    <div id="scan-results" style="margin-top: 20px; display: none;">
-        <h3>진단 결과</h3>
-        <div id="results-table-container"></div>
     </div>
-</div>
+</template>
 
 <style>
     .card {
