@@ -402,6 +402,7 @@ def analyze_config():
                     "recommendations": []
                 }
         
+        logger.info(f"JSON 파싱 완료. 응답을 클라이언트에 반환합니다.")
         return jsonify({
             'analysis': parsed_analysis,
             'usage': usage,

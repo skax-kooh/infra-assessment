@@ -140,7 +140,14 @@ export function performAiAnalysis(configs, resultDiv, outputElement) {
             user_prompt: userPrompt
         }),
     })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(`서버 오류 (HTTP ${response.status}): ${text.substring(0, 200)}`);
+                });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.error) {
                 outputElement.innerHTML = '<p style="color: red;">오류: ' + data.error + '</p>';
