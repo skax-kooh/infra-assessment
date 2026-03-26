@@ -21,4 +21,13 @@ document.addEventListener('DOMContentLoaded', function () {
     window.showConfigContent = showConfigContent;
 
     window.analyzeAllServers = analyzeAllServers;
+
+    // 사이드바 토글 버튼 동작 설정
+    const sidebarCollapseBtn = document.getElementById('sidebarCollapse');
+    if (sidebarCollapseBtn) {
+        sidebarCollapseBtn.addEventListener('click', function () {
+            document.querySelector('.sidebar').classList.toggle('collapsed');
+            document.getElementById('content').classList.toggle('active');
+        });
+    }
 });
