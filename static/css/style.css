@@ -36,7 +36,7 @@ body {
 
 .sidebar-header {
     padding: 20px;
-    background: #1a1a2e;
+    background: var(--primary-bg);
 }
 
 .sidebar ul.components {
@@ -61,7 +61,7 @@ body {
 .sidebar ul ul a {
     font-size: 0.9em !important;
     padding-left: 30px !important;
-    background: #232336;
+    background: transparent;
 }
 
 /* Main Content Styles */
