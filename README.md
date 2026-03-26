@@ -4,20 +4,24 @@ AI Master Project 3기
 ## Project Structure
 ```text
 infra-assessment/
+├── README.md             # 프로젝트 개요 및 구조
 ├── app.py                # Flask 메인 서버
-├── modules/              # 백엔드 모듈
-│   ├── infrastructure/   # SSH/설정 수집
-│   ├── settings/         # API 설정 관리
-│   └── config_store.py   # 설정 저장/동기화
-├── templates/            # HTML 템플릿
-│   ├── assessments/      # 진단 화면
-│   ├── settings/         # 설정 화면
-│   └── layout.html       # 공통 레이아웃
-├── static/               # 정적 파일
-│   ├── css/              # 스타일 (style.css)
-│   └── js/               # 스크립트 (script.js)
-├── scripts/              # 배포 스크립트
-├── logs/                 # 서버 로그
-├── requirements.txt      # 의존성 목록
-└── appspec.yml          # CodeDeploy 설정
+├── appspec.yml           # CodeDeploy 배포 설정
+├── mcp_prompt_server/    # Model Context Protocol 기반 프롬프트/스킬 서버
+│   ├── app.py            # MCP Server 메인
+│   ├── skills/           # 진단 목적별 Skill YAML (보안, 성능, ISMS-P 등)
+│   └── tools/            # 프롬프트 동적 조립 도구
+├── modules/              # 백엔드 핵심 비즈니스 로직
+│   ├── config_store.py   # 설정 상태 저장소 (config.json 관리)
+│   ├── infrastructure/   # 대상 서버 SSH 접속 및 설정 파일 수집/분석
+│   └── settings/         # LLM API 등 글로벌 설정 뷰/API
+├── scripts/              # AWS CodeDeploy 배포 등 쉘 스크립트
+├── static/               # 프론트엔드 정적 리소스
+│   ├── css/              # 공통 스타일시트
+│   └── js/               # 기능별 모듈화된 JS (ai-analysis, results, sidebar 등)
+├── templates/            # HTML 템플릿 파일
+│   ├── assessments/      # 실제 진단 구동 뷰 (web_server.html)
+│   ├── settings/         # 설정 화면 뷰
+│   └── layout.html       # 공통 사이드바 및 네비게이션 레이아웃
+└── requirements.txt      # 파이썬 의존성 패키지 목록
 ```
